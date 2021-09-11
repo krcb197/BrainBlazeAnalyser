@@ -14,5 +14,5 @@ Run the file
 ```bash
 python BlazeAnalyser.py
 ```
-This will create a file similar to the one below:
+This will create a file call ``BrainBlazeAnalysis.png`` similar to the one below:
 ![Example Results](BrainBlazeAnalysis.png)
