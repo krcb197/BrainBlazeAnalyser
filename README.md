@@ -1,5 +1,5 @@
 # BrainBlazeAnalyser
-Python Library for Analysing statistics from the Brain Blaze YouTube Channel
+Python Library for Analysing statistics from the [Brain Blaze YouTube Channel](https://youtube.com/channel/UCYY5GWf7MHFJ6DZeHreoXgw)
 
 # Installing
 
