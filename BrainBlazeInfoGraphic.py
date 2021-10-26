@@ -1,6 +1,15 @@
 
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import datetime
+
+today = datetime.date.today()
+midnight_monday = datetime.datetime.combine(time=datetime.time(),
+                                            date=today - datetime.timedelta(days=today.weekday(), weeks=0),
+                                            tzinfo=datetime.timezone.utc)
+minight_last_monday = datetime.datetime.combine(time=datetime.time(),
+                                                date=today - datetime.timedelta(days=today.weekday(), weeks=1),
+                                                tzinfo=datetime.timezone.utc)
 
 import pandas as pd
 
@@ -51,8 +60,8 @@ if __name__ == "__main__":
                         row=1, col=1)
 
     fig.add_trace(go.Indicator(mode="gauge+number+delta",
-                                value=grouped_duration.unstack('Channel').iloc[-2].sum(),
-                                delta={'reference': grouped_duration.unstack('Channel').iloc[-3].sum()},
+                                value=grouped_duration.unstack('Channel').loc[midnight_monday].sum(),
+                                delta={'reference': grouped_duration.unstack('Channel').loc[minight_last_monday].sum()},
                                 gauge={'axis': {'range': [0, grouped_duration.groupby('Published Time').sum().max()]},
                                       'threshold': {'value': grouped_duration.groupby('Published Time').sum().mean() }},
                                 title={'text': "Total Simon Whistler Output (minutes)"}),
@@ -60,8 +69,8 @@ if __name__ == "__main__":
 
     fig.add_trace(go.Indicator(
         mode="gauge+number+delta",
-        value=grouped_percentage_duration.loc['Brain Blaze'][-2],
-        delta={'reference': grouped_percentage_duration.loc['Brain Blaze'][-3]},
+        value=grouped_percentage_duration.loc['Brain Blaze', midnight_monday],
+        delta={'reference': grouped_percentage_duration.loc['Brain Blaze', minight_last_monday]},
         number={'suffix': '%'},
         gauge={'axis': {'range': [0, 100]},
                'threshold': {'value': grouped_percentage_duration.groupby('Channel').mean()['Brain Blaze']}},
@@ -70,8 +79,8 @@ if __name__ == "__main__":
 
     fig.add_trace(go.Indicator(
         mode="gauge+number+delta",
-        value=grouped_count.loc['Brain Blaze'][-2],
-        delta={'reference': grouped_count.loc['Brain Blaze'][-3]},
+        value=grouped_count.loc['Brain Blaze', midnight_monday],
+        delta={'reference': grouped_count.loc['Brain Blaze', minight_last_monday]},
 
         gauge={'axis': {'range': [0, max_brain_blaze_video_per_week]},
                'threshold': {'value': grouped_count.groupby('Channel').mean()['Brain Blaze']}},
@@ -80,8 +89,8 @@ if __name__ == "__main__":
 
     fig.add_trace(go.Indicator(
         mode="gauge+number+delta",
-        value=grouped_duration.loc['Brain Blaze'][-2],
-        delta={'reference': grouped_duration.loc['Brain Blaze'][-3]},
+        value=grouped_duration.loc['Brain Blaze', midnight_monday],
+        delta={'reference': grouped_duration.loc['Brain Blaze', minight_last_monday]},
         gauge={'axis': {'range': [0, grouped_duration.groupby('Channel').max()['Brain Blaze']]},
                'threshold': {'value': grouped_duration.groupby('Channel').mean()['Brain Blaze']}},
         title={'text': "Business Blaze<br>duration (minutes)"}),
@@ -89,7 +98,7 @@ if __name__ == "__main__":
 
 
     fig.update_layout(height=1000, width=1600,
-                      title_text=f'Office of Basement Accountability, Weekly report for period ending {data_to_plot.index[-1]:%d %b %Y}',
+                      title_text=f'Office of Basement Accountability, Weekly report for period ending {midnight_monday:%d %b %Y}',
                       title_x=0.5)
     fig.update_xaxes(title_text="Date of Week Start (always a Monday)", row=1, col=1)
     fig.update_yaxes(title_text="Content Duration (minutes)", row=1, col=1)
