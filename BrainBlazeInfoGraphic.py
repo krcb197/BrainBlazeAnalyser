@@ -10,6 +10,9 @@ midnight_monday = datetime.datetime.combine(time=datetime.time(),
 minight_last_monday = datetime.datetime.combine(time=datetime.time(),
                                                 date=today - datetime.timedelta(days=today.weekday(), weeks=1),
                                                 tzinfo=datetime.timezone.utc)
+midight_12_week_ago_monday = datetime.datetime.combine(time=datetime.time(),
+                                                date=today - datetime.timedelta(days=today.weekday(), weeks=12),
+                                                tzinfo=datetime.timezone.utc)
 
 import pandas as pd
 
@@ -17,7 +20,7 @@ from BrainBlazeAnalyser import BrainBlazeDataSet, three_month_back
 
 if __name__ == "__main__":
 
-    with open('.krcb197_google_API_key') as fp:
+    with open('.google_API_key') as fp:
         api_key=fp.readlines()
 
     data_class = BrainBlazeDataSet(api_key=api_key)
@@ -47,7 +50,7 @@ if __name__ == "__main__":
                         specs=[[{"type": "xy", "colspan": 4},None, None, None],
                                [{"type": "domain"}, {"type": "domain"}, {"type": "domain"}, {"type": "domain"}]])
 
-    data_to_plot = grouped_duration.unstack('Channel')[1:-1]
+    data_to_plot = grouped_duration.unstack('Channel').loc[midight_12_week_ago_monday:midnight_monday]
     for channel in video_DataFrame['Channel'].unique():
         fig.add_trace(go.Scatter(x=data_to_plot.index,
                                  y=data_to_plot[channel].values,
@@ -62,7 +65,7 @@ if __name__ == "__main__":
     fig.add_trace(go.Indicator(mode="gauge+number+delta",
                                 value=grouped_duration.unstack('Channel').loc[midnight_monday].sum(),
                                 delta={'reference': grouped_duration.unstack('Channel').loc[minight_last_monday].sum()},
-                                gauge={'axis': {'range': [0, grouped_duration.groupby('Published Time').sum().max()]},
+                                gauge={'axis': {'range': [0, grouped_duration.groupby('Published Time').sum().max() * 1.2]},
                                       'threshold': {'value': grouped_duration.groupby('Published Time').sum().mean() }},
                                 title={'text': "Total Simon Whistler Output (minutes)"}),
                   row=2, col=1)
