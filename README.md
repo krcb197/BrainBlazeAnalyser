@@ -19,3 +19,11 @@ python BlazeAnalyser.py
 ```
 This will create a file call ``BrainBlazeAnalysis.png`` similar to the one below:
 ![Example Results](BrainBlazeAnalysis.png)
+
+Alternatively
+```bash
+python BrainBlazeInfoGraphic.py
+```
+This will create the summary often I post to twitter: <img width="800" alt="image" src="https://user-images.githubusercontent.com/34693973/143104150-cbdea592-789d-45ac-a4ff-acc8d9eef2d8.png">
+
+
