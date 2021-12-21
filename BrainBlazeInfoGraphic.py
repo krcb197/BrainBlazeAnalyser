@@ -85,7 +85,8 @@ if __name__ == "__main__":
         value=grouped_count.loc['Brain Blaze', midnight_monday],
         delta={'reference': grouped_count.loc['Brain Blaze', minight_last_monday]},
 
-        gauge={'axis': {'range': [0, max_brain_blaze_video_per_week]},
+        gauge={'axis': {'range': [0, max_brain_blaze_video_per_week+2 ],
+                        'nticks' : int(max_brain_blaze_video_per_week+3) },
                'threshold': {'value': grouped_count.groupby('Channel').mean()['Brain Blaze']}},
         title={'text': "Brain Blaze<br>Number of Videos"}),
                   row=2, col=3)
