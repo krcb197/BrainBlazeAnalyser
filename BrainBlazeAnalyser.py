@@ -270,7 +270,10 @@ class BrainBlazeDataSet:
             stream_list.append('liveStreamingDetails' in video_data.keys())
             views_list.append(int(video_data['statistics']['viewCount']))
             like_list.append(int(video_data['statistics']['likeCount']))
-            dislike_list.append(int(video_data['statistics']['dislikeCount']))
+            if 'dislikeCount' in video_data['statistics']:
+                dislike_list.append(int(video_data['statistics']['dislikeCount']))
+            else:
+                dislike_list.append(np.nan)
             video_id_list.append(video_summary['video_id'])
             title_list.append(video_data['title'])
 
