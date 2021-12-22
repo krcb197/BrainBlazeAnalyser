@@ -72,7 +72,8 @@ class BrainBlazeDataSet:
                                'UCp1tsmksyf6TgKFMdt8-05Q',  # Casual Crimalist
                                'UCQ-hpFPF4nOKoKPEAZM_THw',  # Top Tenz
                                'UC64UiPJwM_e9AqAd7RiD7JA',  # Today I found Out
-                               'UCZdWrz8pF6B5Y_c6Zi6pmdQ']  # decoding the unknown
+                               'UCZdWrz8pF6B5Y_c6Zi6pmdQ',  # decoding the unknown
+                               'UC9h8BDcXwkhZtnqoQJ7PggA']  # Warographics
 
     # YouTube heavily restrict their API usage, to help manage daily allowances, this library uses
     # a data cache, stored in some JSON files
