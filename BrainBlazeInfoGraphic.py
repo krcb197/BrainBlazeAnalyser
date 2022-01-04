@@ -50,7 +50,7 @@ if __name__ == "__main__":
                         specs=[[{"type": "xy", "colspan": 4},None, None, None],
                                [{"type": "domain"}, {"type": "domain"}, {"type": "domain"}, {"type": "domain"}]])
 
-    data_to_plot = grouped_duration.unstack('Channel').loc[midight_12_week_ago_monday:midnight_monday]
+    data_to_plot = grouped_duration.unstack('Channel').loc[midight_12_week_ago_monday:midnight_monday].fillna(0)
     for channel in video_DataFrame['Channel'].unique():
         fig.add_trace(go.Scatter(x=data_to_plot.index,
                                  y=data_to_plot[channel].values,
@@ -72,8 +72,8 @@ if __name__ == "__main__":
 
     fig.add_trace(go.Indicator(
         mode="gauge+number+delta",
-        value=grouped_percentage_duration.loc['Brain Blaze', midnight_monday],
-        delta={'reference': grouped_percentage_duration.loc['Brain Blaze', minight_last_monday]},
+        value=grouped_percentage_duration.unstack('Channel').fillna(0)['Brain Blaze'].loc[midnight_monday],
+        delta={'reference': grouped_percentage_duration.unstack('Channel').fillna(0)['Brain Blaze'].loc[minight_last_monday]},
         number={'suffix': '%'},
         gauge={'axis': {'range': [0, 100]},
                'threshold': {'value': grouped_percentage_duration.groupby('Channel').mean()['Brain Blaze']}},
@@ -82,8 +82,8 @@ if __name__ == "__main__":
 
     fig.add_trace(go.Indicator(
         mode="gauge+number+delta",
-        value=grouped_count.loc['Brain Blaze', midnight_monday],
-        delta={'reference': grouped_count.loc['Brain Blaze', minight_last_monday]},
+        value=grouped_count.unstack('Channel').fillna(0)['Brain Blaze'].loc[midnight_monday],
+        delta={'reference': grouped_count.unstack('Channel').fillna(0)['Brain Blaze'].loc[minight_last_monday]},
 
         gauge={'axis': {'range': [0, max_brain_blaze_video_per_week+2 ],
                         'nticks' : int(max_brain_blaze_video_per_week+3) },
@@ -93,8 +93,8 @@ if __name__ == "__main__":
 
     fig.add_trace(go.Indicator(
         mode="gauge+number+delta",
-        value=grouped_duration.loc['Brain Blaze', midnight_monday],
-        delta={'reference': grouped_duration.loc['Brain Blaze', minight_last_monday]},
+        value=grouped_duration.unstack('Channel').fillna(0)['Brain Blaze'].loc[midnight_monday],
+        delta={'reference': grouped_duration.unstack('Channel').fillna(0)['Brain Blaze'].loc[minight_last_monday]},
         gauge={'axis': {'range': [0, grouped_duration.groupby('Channel').max()['Brain Blaze']]},
                'threshold': {'value': grouped_duration.groupby('Channel').mean()['Brain Blaze']}},
         title={'text': "Business Blaze<br>duration (minutes)"}),
