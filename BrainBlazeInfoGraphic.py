@@ -1,6 +1,7 @@
 
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import plotly.express as px
 import datetime
 
 today = datetime.date.today()
@@ -51,7 +52,7 @@ if __name__ == "__main__":
                                [{"type": "domain"}, {"type": "domain"}, {"type": "domain"}, {"type": "domain"}]])
 
     data_to_plot = grouped_duration.unstack('Channel').loc[midight_12_week_ago_monday:midnight_monday].fillna(0)
-    for channel in video_DataFrame['Channel'].unique():
+    for index, channel in enumerate(video_DataFrame['Channel'].unique()):
         fig.add_trace(go.Scatter(x=data_to_plot.index,
                                  y=data_to_plot[channel].values,
                                  name=channel,
@@ -59,6 +60,7 @@ if __name__ == "__main__":
                                  legendgroup='Channels',
                                  legendgrouptitle={'text':'Channel'},
                                  mode='lines',
+                                 line={'color':px.colors.qualitative.Dark24[index]},
                                  stackgroup='one'),
                         row=1, col=1)
 
@@ -105,6 +107,7 @@ if __name__ == "__main__":
                       title_text=f'Office of Basement Accountability, Weekly report for period ending {midnight_monday:%d %b %Y}',
                       title_x=0.5)
     fig.update_xaxes(title_text="Date of Week Start (always a Monday)", row=1, col=1)
+    fig.update_xaxes(dtick=7*24*60*60*1000, tick0=midight_12_week_ago_monday )
     fig.update_yaxes(title_text="Content Duration (minutes)", row=1, col=1)
 
     fig.write_image('minutes.png', engine='kaleido')
