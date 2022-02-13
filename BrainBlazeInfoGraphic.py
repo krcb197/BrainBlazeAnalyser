@@ -6,12 +6,17 @@ import json
 import os
 import re
 from dateutil.parser import isoparse
+import argparse
 
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly.express as px
 
 from ExtendedYoutubeEasyWrapper import ExtendedYoutubeEasyWrapper
+
+from BrainBlazeAnalyser import ISO8601_duration_to_time_delta
+
+import tweepy
 
 today = datetime.date.today()
 midnight_monday = datetime.datetime.combine(time=datetime.time(),
@@ -25,40 +30,6 @@ midight_12_week_ago_monday = datetime.datetime.combine(time=datetime.time(),
                                                 tzinfo=datetime.timezone.utc)
 
 import pandas as pd
-
-def ISO8601_duration_to_time_delta(value: str) -> Optional[datetime.timedelta]:
-    """
-    function to convert ISO8601 relative periods (used for video durations) into a Python
-    timedelta
-
-    :param value: a string containing a ISO duration
-    :return: duration as a timedelta
-    """
-
-    if value[0:2] == 'PT':
-        analysis = re.findall(r'(\d+\D)', value[2:])
-
-        if analysis is None:
-            print(f'failed to process: {value}')
-            return None
-        else:
-            min = 0
-            sec = 0
-            hour = 0
-            for entry in analysis:
-                if entry[-1] == 'M':
-                    min = int(entry[:-1])
-                elif entry[-1] == 'S':
-                    sec = int(entry[:-1])
-                elif entry[-1] == 'H':
-                    hour = int(entry[:-1])
-                else:
-                    print('unhanded subsection {entry} in {value}')
-
-            return datetime.timedelta(minutes=min, seconds=sec, hours=hour)
-    else:
-        print(f'string should start PT, {value}')
-        return None
 
 class BrainBlazeInfoGraphic:
 
@@ -241,7 +212,7 @@ class BrainBlazeInfoGraphic:
         return videos_details
 
     @property
-    def DataFrame(self):
+    def _df_videos(self):
 
         a = pd.DataFrame(self.videos)
         a.set_index('video_id', inplace=True)
@@ -249,22 +220,36 @@ class BrainBlazeInfoGraphic:
         a.drop('publishedAt', axis=1, inplace=True)
         a.rename(columns={'channel': 'Channel'}, inplace=True)
 
+        return a.drop_duplicates(keep='last')
+
+    @property
+    def _df_videos_details(self):
+
         b = pd.DataFrame(self.videos_detail)
         b.set_index('video_id', inplace=True)
         b['Duration (s)'] = b['duration'].apply(ISO8601_duration_to_time_delta).dt.total_seconds()
         b.drop('duration', axis=1, inplace=True)
 
-        return pd.concat([a, b], axis=1)
+        return b.drop_duplicates(keep='last')
 
+    @property
+    def DataFrame(self):
 
+        return pd.concat([self._df_videos, self._df_videos_details], axis=1)
+
+parse = argparse.ArgumentParser(description='Weekly Office of Basement accountabilit generator')
+parse.add_argument('-youtubeapikey', type=str, required=True)
+parse.add_argument('-twitter_consumer_key', type=str, required=True)
+parse.add_argument('-twitter_consumer_secret', type=str, required=True)
+parse.add_argument('-twitter_access_token', type=str, required=True)
+parse.add_argument('-twitter_access_secret', type=str, required=True)
 
 
 if __name__ == "__main__":
 
-    with open('.google_API_key') as fp:
-        api_key=fp.readlines()
+    command_args = parse.parse_args()
 
-    data_class = BrainBlazeInfoGraphic(api_key=api_key)
+    data_class = BrainBlazeInfoGraphic(api_key=command_args.youtubeapikey)
 
     # inforgraphic
     three_month_videos = data_class.DataFrame
@@ -348,3 +333,17 @@ if __name__ == "__main__":
     fig.update_yaxes(title_text="Content Duration (minutes)", row=1, col=1)
 
     fig.write_image('minutes.png', engine='kaleido')
+
+    auth = tweepy.OAuthHandler(consumer_key=command_args.twitter_consumer_key,
+                               consumer_secret=command_args.twitter_consumer_secret)
+    auth.set_access_token(key=command_args.twitter_access_token,
+                          secret=command_args.twitter_access_secret)
+
+    #auth = tweepy.OAuth2BearerHandler(command_args.twitter_bearer_handler)
+    twitter_api = tweepy.API(auth)
+
+    media_list = []
+    response = twitter_api.media_upload('minutes.png')
+    media_list.append(response.media_id_string)
+    twitter_api.update_status('Weekly report from the Office of Basement Accountability',
+                              media_ids=media_list)
