@@ -27,5 +27,5 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Generate Report
       run: |
-        python BrainBlazeInfoGraphic -youtubeapikey {{YOUTUBE_API_KEY}} -twitter_consumer_key {{TWITTER_CONSUMER_KEY}} -twitter_consumer_secret {{TWITTER_CONSUMER_SECRET}} -twitter_access_token {{TWITTER_ACCESS_TOKEN}} -twitter_access_secret {{TWITTER_ACCESS_SECRET}}
+        python BrainBlazeInfoGraphic.py -youtubeapikey ${{ secrets.YOUTUBE_API_KEY }} -twitter_consumer_key ${{ secrets.TWITTER_CONSUMER_KEY}} -twitter_consumer_secret ${{ secrets.TWITTER_CONSUMER_SECRET}} -twitter_access_token ${{ secrets.TWITTER_ACCESS_TOKEN}} -twitter_access_secret ${{ secrets.TWITTER_ACCESS_SECRET}}
 
