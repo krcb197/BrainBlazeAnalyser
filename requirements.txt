@@ -5,3 +5,4 @@ youtube-easy-api>=0.2.2
 tweepy>=4.5.0
 python-dateutil>=2.8.2
 plotly>=5.3.1
+kaleido
