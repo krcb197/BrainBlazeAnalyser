@@ -103,40 +103,23 @@ class BrainBlazeInfoGraphic:
                 json.dump(videos, fp)
 
         else:
-            # cache file exists and must be updated
-            with open(cache_file) as fp:
-                videos = json.load(fp)
-
             last_update_time = os.path.getmtime(cache_file)
             current_time = time.time()
             one_day_secs = 24 * 60 * 60
             if (current_time - one_day_secs) > last_update_time:
                 # if the file was last updated more than 24 hours ago do an update
 
-                # find the latest video publish date in the set of videos read from the cache
-                video_ID = []
-                last_date_of_interest = earliest_date
-                for video in videos:
-                    video_ID.append(video['video_id'])
-                    video_pub_at = isoparse(video['publishedAt'])
-                    if video_pub_at > last_date_of_interest:
-                        last_date_of_interest = video_pub_at
+                # The cache file does not exist and must be generated from scratch
+                videos = get_videos(earliest_date)
 
-                new_videos = get_videos(last_date_of_interest)
-
-                # deduplicate any video found that may have been in the original list
-                for video in new_videos:
-                    if video['video_id'] in video_ID:
-                        new_videos.remove(video)
-
-                # if there are new videos found from the search, then write back out the cache file
-                if len(new_videos) > 0:
-                    videos += new_videos
-
-                    with open(cache_file, 'w') as fp:
-                        json.dump(videos, fp)
+                with open(cache_file, 'w') as fp:
+                    json.dump(videos, fp)
             else:
                 print(f'{cache_file=} is less than 24 hours old no update performed')
+
+                # cache file exists and must be updated
+                with open(cache_file) as fp:
+                    videos = json.load(fp)
 
         return videos
 
@@ -150,13 +133,13 @@ class BrainBlazeInfoGraphic:
                     end_point = len(video_id)
 
                 results = self.easy_wrapper.service.videos().list(id=video_id[start_point:end_point],
-                                                                  part="id, contentDetails, liveStreamingDetails").execute()
+                                                                  part="id, snippet, contentDetails, liveStreamingDetails").execute()
                 items.extend( results.get("items", []))
 
 
         else:
             results = self.easy_wrapper.service.videos().list(id=video_id,
-                                             part="id, contentDetails, liveStreamingDetails").execute()
+                                             part="id, snippet, contentDetails, liveStreamingDetails").execute()
             items = results.get("items", [])
 
         output = []
@@ -167,6 +150,11 @@ class BrainBlazeInfoGraphic:
 
             output_record['video_id'] = item['id']
             output_record['duration'] = item['contentDetails']['duration']
+            output_record['channel_id'] = item['snippet']['channelId']
+            output_record['title'] = item['snippet']['title']
+            output_record['Channel'] = item['snippet']['channelTitle']
+            output_record['publishedAt'] = item['snippet']['publishedAt']
+
             if 'liveStreamingDetails' in item.keys():
                 output_record['liveStreamingDetails'] = item['liveStreamingDetails']
 
@@ -191,42 +179,32 @@ class BrainBlazeInfoGraphic:
             with open(cache_file, 'w') as fp:
                 json.dump(videos_details, fp)
         else:
-            with open(cache_file) as fp:
-                videos_details = json.load(fp)
+
 
             last_update_time = os.path.getmtime(cache_file)
             current_time = time.time()
             one_day_secs = 24 * 60 * 60
             if (current_time - one_day_secs) > last_update_time:
                 # if the file was last updated more than 24 hours ago do an update
-                detailed_video_id_list = self._get_video_id_list(videos=videos_details)
-
-                missing_video_id = list(set(video_id_list) - set(detailed_video_id_list))
-                videos_details += self._get_videos_meta_data(missing_video_id)
+                videos_details = self._get_videos_meta_data(video_id_list)
 
                 with open(cache_file, 'w') as fp:
                     json.dump(videos_details, fp)
             else:
                 print(f'{cache_file=} is less than 24 hours old no update performed')
 
+                with open(cache_file) as fp:
+                    videos_details = json.load(fp)
+
         return videos_details
-
-    @property
-    def _df_videos(self):
-
-        a = pd.DataFrame(self.videos)
-        a.set_index('video_id', inplace=True)
-        a['Published Time'] = a['publishedAt'].apply(isoparse)
-        a.drop('publishedAt', axis=1, inplace=True)
-        a.rename(columns={'channel': 'Channel'}, inplace=True)
-
-        return a.drop_duplicates(keep='last')
 
     @property
     def _df_videos_details(self):
 
         b = pd.DataFrame(self.videos_detail)
         b.set_index('video_id', inplace=True)
+        b['Published Time'] = b['publishedAt'].apply(isoparse)
+        b.drop('publishedAt', axis=1, inplace=True)
         b['Duration (s)'] = b['duration'].apply(ISO8601_duration_to_time_delta).dt.total_seconds()
         b.drop('duration', axis=1, inplace=True)
 
@@ -235,7 +213,7 @@ class BrainBlazeInfoGraphic:
     @property
     def DataFrame(self):
 
-        return pd.concat([self._df_videos, self._df_videos_details], axis=1)
+        return self._df_videos_details
 
 parse = argparse.ArgumentParser(description='Weekly Office of Basement accountabilit generator')
 parse.add_argument('-youtubeapikey', type=str, required=True)

@@ -15,7 +15,8 @@ class ExtendedYoutubeEasyWrapper(YoutubeEasyWrapper):
             kwargs['order'] = kwargs['order']
         else:
             kwargs['order'] = 'relevance'
-        kwargs['part'] = 'id,snippet'
+        #kwargs['part'] = 'id,snippet'
+        kwargs['part'] = 'id'
         kwargs['type'] = 'video'
 
         items = []
@@ -37,11 +38,11 @@ class ExtendedYoutubeEasyWrapper(YoutubeEasyWrapper):
         output = []
         for item in items:
             result = dict()
-            result['title'] = item['snippet']['title']
-            result['channel'] = item['snippet']['channelTitle']
+            #result['title'] = item['snippet']['title']
+            #result['channel'] = item['snippet']['channelTitle']
             result['video_id'] = item['id']['videoId']
-            result['channel_id'] = item['snippet']['channelId']
-            result['publishedAt'] = item['snippet']['publishedAt']
+            #result['channel_id'] = item['snippet']['channelId']
+            #result['publishedAt'] = item['snippet']['publishedAt']
             output.append(result)
 
         return output
