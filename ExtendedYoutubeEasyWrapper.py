@@ -7,10 +7,14 @@ from time import sleep
 
 class ExtendedYoutubeEasyWrapper(YoutubeEasyWrapper):
 
-
-    def channel_videos(self, channelID, publishedAfter:datetime=datetime(year=2001, month=1, day=1, tzinfo=timezone.utc), **kwargs):
+    def channel_videos(self, channelID,
+                       publishedAfter: datetime = datetime(year=2001, month=1, day=1,
+                                                           tzinfo=timezone.utc),
+                       publishedBefore: datetime = datetime.now(timezone.utc), **kwargs):
         kwargs['channelId'] = channelID
+        kwargs['publishedBefore'] = publishedBefore.isoformat()
         kwargs['publishedAfter'] = publishedAfter.isoformat()
+        kwargs['maxResults'] = 50  # maximum number supported by the API
         if 'order' in kwargs.items():
             kwargs['order'] = kwargs['order']
         else:
