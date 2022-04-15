@@ -25,6 +25,9 @@ midnight_monday = datetime.datetime.combine(time=datetime.time(),
 minight_last_monday = datetime.datetime.combine(time=datetime.time(),
                                                 date=today - datetime.timedelta(days=today.weekday(), weeks=1),
                                                 tzinfo=datetime.timezone.utc)
+midight_13_week_ago_monday = datetime.datetime.combine(time=datetime.time(),
+                                                date=today - datetime.timedelta(days=today.weekday(), weeks=13),
+                                                tzinfo=datetime.timezone.utc)
 midight_12_week_ago_monday = datetime.datetime.combine(time=datetime.time(),
                                                 date=today - datetime.timedelta(days=today.weekday(), weeks=12),
                                                 tzinfo=datetime.timezone.utc)
@@ -35,19 +38,19 @@ class BrainBlazeInfoGraphic:
 
     # YouTube Channel ID other Simon Whistler YouTube channels, thise are used to make sure
     # Simon is not overly focusing on the "wrong" channels
-    whistler_channels = ['UCYY5GWf7MHFJ6DZeHreoXgw', # BrainBlaze
+    whistler_channels = ['UCYY5GWf7MHFJ6DZeHreoXgw',  # BrainBlaze
                          'UClnDI2sdehVm1zm_LmUHsjQ',  # Biographics
                          'UCHKRfxkMTqiiv4pF99qGKIw',  # Geographics
                          'UCnb-VTwBHEV3gtiB9di9DZQ',  # History Highlights
-                           'UC0woBco6Dgcxt0h8SwyyOmw',  # Megaprojects
-                           'UC3Wn3dABlgESm8Bzn8Vamgg',  # Side Projects
-                           'UCVH8lH7ZLDUe_d9mZ3dlyYQ',  # xplrd
-                           'UCf-U0uPVQZtcqXUWa_Hl4Mw',  # Into the shadows
-                           'UCp1tsmksyf6TgKFMdt8-05Q',  # Casual Crimalist
-                           'UCQ-hpFPF4nOKoKPEAZM_THw',  # Top Tenz
-                           'UC64UiPJwM_e9AqAd7RiD7JA',  # Today I found Out
-                           'UCZdWrz8pF6B5Y_c6Zi6pmdQ',  # decoding the unknown
-                           'UC9h8BDcXwkhZtnqoQJ7PggA']  # Warographics
+                         'UC0woBco6Dgcxt0h8SwyyOmw',  # Megaprojects
+                         'UC3Wn3dABlgESm8Bzn8Vamgg',  # Side Projects
+                         'UCVH8lH7ZLDUe_d9mZ3dlyYQ',  # xplrd
+                         'UCf-U0uPVQZtcqXUWa_Hl4Mw',  # Into the shadows
+                         'UCp1tsmksyf6TgKFMdt8-05Q',  # Casual Crimalist
+                         'UCQ-hpFPF4nOKoKPEAZM_THw',  # Top Tenz
+                         'UC64UiPJwM_e9AqAd7RiD7JA',  # Today I found Out
+                         'UCZdWrz8pF6B5Y_c6Zi6pmdQ',  # decoding the unknown
+                         'UC9h8BDcXwkhZtnqoQJ7PggA']  # Warographics
 
     _video_cache_fn = 'BrainBlazeInfoGraphic_video_cache.json'
     _video_detail_cache_fn = 'BrainBlazeInfoGraphic_video_detail_cache.json'
@@ -63,7 +66,7 @@ class BrainBlazeInfoGraphic:
         # last three months
         self.videos = self._channel_videos(cache_file=self._video_cache_fn,
                                            channel_id_list=self.whistler_channels,
-                                           earliest_date=midight_12_week_ago_monday)
+                                           earliest_date=midight_13_week_ago_monday)
         self.videos_detail = self._video_details(cache_file=self._video_detail_cache_fn,
                                                  videos=self.videos)
 
