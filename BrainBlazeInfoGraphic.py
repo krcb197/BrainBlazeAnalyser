@@ -1,10 +1,9 @@
 
-from typing import Optional, Union, List
+from typing import List
 import datetime
 import time
 import json
 import os
-import re
 from dateutil.parser import isoparse
 import argparse
 
