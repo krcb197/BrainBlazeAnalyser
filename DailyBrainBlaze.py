@@ -7,11 +7,6 @@ import os
 from dateutil.parser import isoparse
 import argparse
 
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-import plotly.express as px
-from sklearn import linear_model
-
 from ExtendedYoutubeEasyWrapper import ExtendedYoutubeEasyWrapper
 
 from BrainBlazeAnalyser import ISO8601_duration_to_time_delta
