@@ -144,11 +144,15 @@ class DailyBrainBlaze:
     def _get_video_id_list(videos):
 
         video_df = pd.DataFrame(videos)
+        if len(video_df) == 0:
+            return None
         return list(video_df['video_id'])
 
     def _video_details(self, cache_file, videos):
 
         video_id_list = self._get_video_id_list(videos)
+        if video_id_list is None:
+            return None
 
         if os.path.isfile(cache_file) is False:
 
@@ -179,6 +183,8 @@ class DailyBrainBlaze:
     @property
     def _df_videos_details(self):
 
+        if self.videos_detail is None:
+            return None
         b = pd.DataFrame(self.videos_detail)
         b.set_index('video_id', inplace=True)
         b['Published Time'] = b['publishedAt'].apply(isoparse)
@@ -192,6 +198,10 @@ class DailyBrainBlaze:
     def DataFrame(self):
 
         return self._df_videos_details
+
+    def __len__(self):
+
+        return len(self.videos)
 
 parse = argparse.ArgumentParser(description='Weekly Office of Basement accountabilit generator')
 parse.add_argument('-youtubeapikey', type=str, required=True)
@@ -207,16 +217,17 @@ if __name__ == "__main__":
 
     data_class = DailyBrainBlaze(api_key=command_args.youtubeapikey)
 
+    if len(data_class) > 0:
 
 
-    auth = tweepy.OAuthHandler(consumer_key=command_args.twitter_consumer_key,
-                               consumer_secret=command_args.twitter_consumer_secret)
-    auth.set_access_token(key=command_args.twitter_access_token,
-                          secret=command_args.twitter_access_secret)
+        auth = tweepy.OAuthHandler(consumer_key=command_args.twitter_consumer_key,
+                                   consumer_secret=command_args.twitter_consumer_secret)
+        auth.set_access_token(key=command_args.twitter_access_token,
+                              secret=command_args.twitter_access_secret)
 
-    #auth = tweepy.OAuth2BearerHandler(command_args.twitter_bearer_handler)
-    twitter_api = tweepy.API(auth)
+        #auth = tweepy.OAuth2BearerHandler(command_args.twitter_bearer_handler)
+        twitter_api = tweepy.API(auth)
 
-    for video_ID, item in data_class.DataFrame.iterrows():
-        tweet_text = f'New Brain Blaze Video: {item["title"]} \n https://www.youtube.com/watch?v={video_ID}'
-        twitter_api.update_status(tweet_text)
+        for video_ID, item in data_class.DataFrame.iterrows():
+            tweet_text = f'New Brain Blaze Video: {item["title"]} \n https://www.youtube.com/watch?v={video_ID}'
+            twitter_api.update_status(tweet_text)
