@@ -307,7 +307,7 @@ if __name__ == "__main__":
         delta={'reference': grouped_duration.unstack('Channel').fillna(0)['Brain Blaze'].loc[minight_last_monday]},
         gauge={'axis': {'range': [0, grouped_duration.groupby('Channel').max()['Brain Blaze']]},
                'threshold': {'value': grouped_duration.groupby('Channel').mean()['Brain Blaze']}},
-        title={'text': "Business Blaze<br>duration (minutes)"}),
+        title={'text': "Brain Blaze<br>duration (minutes)"}),
                   row=2, col=4)
 
 
