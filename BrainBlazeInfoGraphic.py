@@ -50,6 +50,7 @@ class BrainBlazeInfoGraphic:
                          'UC64UiPJwM_e9AqAd7RiD7JA',  # Today I found Out
                          'UCZdWrz8pF6B5Y_c6Zi6pmdQ',  # decoding the unknown
                          'UC9h8BDcXwkhZtnqoQJ7PggA',  # Warographics
+                         'UC2NW669ad9CX7KxmykdHbqA',  # The Simon Whistler Show
                          'UC6udLPIYhLsi_w7MD0iD0tw']  # Science of Science Fiction
 
     _video_cache_fn = 'BrainBlazeInfoGraphic_video_cache.json'
