@@ -319,7 +319,7 @@ if __name__ == "__main__":
     fig.update_xaxes(dtick=7*24*60*60*1000, tick0=midight_12_week_ago_monday )
     fig.update_yaxes(title_text="Content Duration (minutes)", row=1, col=1)
 
-    fig.write_image('minutes.png', engine='kaleido')
+    fig.write_image('bb_infographic.png', engine='kaleido')
 
     auth = tweepy.OAuthHandler(consumer_key=command_args.twitter_consumer_key,
                                consumer_secret=command_args.twitter_consumer_secret)
@@ -330,7 +330,7 @@ if __name__ == "__main__":
     twitter_api = tweepy.API(auth)
 
     media_list = []
-    response = twitter_api.media_upload('minutes.png')
+    response = twitter_api.media_upload(bb_infographic.png')
     media_list.append(response.media_id_string)
     twitter_api.update_status('Weekly report from the Office of Basement Accountability',
                               media_ids=media_list)
