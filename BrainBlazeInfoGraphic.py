@@ -330,7 +330,7 @@ if __name__ == "__main__":
     twitter_api = tweepy.API(auth)
 
     media_list = []
-    response = twitter_api.media_upload(bb_infographic.png')
+    response = twitter_api.media_upload('bb_infographic.png')
     media_list.append(response.media_id_string)
     twitter_api.update_status('Weekly report from the Office of Basement Accountability',
                               media_ids=media_list)
