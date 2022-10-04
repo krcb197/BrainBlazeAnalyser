@@ -237,7 +237,7 @@ if __name__ == "__main__":
     three_month_videos = data_class.DataFrame
 
     # remove a 12 hour The Casual Criminalist which is a re-release of previous videos
-    three_month_videos.drop(index=['3aXPgSBoeFY'], inplace=True)
+    three_month_videos.drop(index=['3aXPgSBoeFY'], inplace=True, errors='ignore')
 
 
     grouped_count = \
