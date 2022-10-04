@@ -238,6 +238,9 @@ if __name__ == "__main__":
 
     # remove a 12 hour The Casual Criminalist which is a re-release of previous videos
     three_month_videos.drop(index=['3aXPgSBoeFY'], inplace=True, errors='ignore')
+    
+    # remove a 12 hour deciding the unknown video which is a re-release of previous videos
+    three_month_videos.drop(index=['Ncqt4XSQK4Y'], inplace=True, errors='ignore')
 
 
     grouped_count = \
