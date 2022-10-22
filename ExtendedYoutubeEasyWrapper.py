@@ -51,6 +51,35 @@ class ExtendedYoutubeEasyWrapper(YoutubeEasyWrapper):
 
         return output
 
+    def channel(self, channelID, **kwargs):
+        kwargs['id'] = channelID
+        kwargs['part'] = 'id,snippet'
+
+        items = []
+        results = self.service.channels().list(**kwargs).execute()
+
+        current_page = 0
+        max_pages = 30000
+        while results and current_page < max_pages:
+            items.extend(results['items'])
+
+            if 'nextPageToken' in results:
+                kwargs['pageToken'] = results['nextPageToken']
+                sleep(1)
+                results = self.service.search().list(**kwargs).execute()
+                current_page += 1
+            else:
+                break
+
+        output = []
+        for item in items:
+            result = dict()
+            result['title'] = item['snippet']['title']
+            result['id'] = item['id']
+            output.append(result)
+
+        return output
+
     def get_metadata(self, video_id, include_comments=True):
         list_videos_by_id = self.service.videos().list(id=video_id,
                                                        part="id, snippet, contentDetails, statistics, liveStreamingDetails").execute()

@@ -4,6 +4,7 @@ import datetime
 import time
 import json
 import os
+import numpy as np
 from dateutil.parser import isoparse
 import argparse
 
@@ -55,6 +56,7 @@ class BrainBlazeInfoGraphic:
 
     _video_cache_fn = 'BrainBlazeInfoGraphic_video_cache.json'
     _video_detail_cache_fn = 'BrainBlazeInfoGraphic_video_detail_cache.json'
+    _channel_cache_fn = 'BrainBlazeInfoGraphic_channel_cache.json'
 
     def __init__(self, api_key):
 
@@ -70,6 +72,36 @@ class BrainBlazeInfoGraphic:
                                            earliest_date=midight_13_week_ago_monday)
         self.videos_detail = self._video_details(cache_file=self._video_detail_cache_fn,
                                                  videos=self.videos)
+
+    @property
+    def channels(self):
+
+        if os.path.isfile(self._channel_cache_fn) is False:
+            channel_data = self.easy_wrapper.channel(channelID=','.join(self.whistler_channels))
+
+            with open(self._channel_cache_fn, 'w') as fp:
+                json.dump(channel_data, fp)
+
+        else:
+            last_update_time = os.path.getmtime(self._channel_cache_fn)
+            current_time = time.time()
+            one_day_secs = 24 * 60 * 60
+            if (current_time - one_day_secs) > last_update_time:
+                # if the file was last updated more than 24 hours ago do an update
+
+                # The cache file does not exist and must be generated from scratch
+                channel_data = self.easy_wrapper.channel(channelID=','.join(self.whistler_channels))
+
+                with open(self._channel_cache_fn, 'w') as fp:
+                    json.dump(channel_data, fp)
+            else:
+                print(f'{self._channel_cache_fn=} is less than 24 hours old no update performed')
+
+                # cache file exists and must be updated
+                with open(self._channel_cache_fn) as fp:
+                    channel_data = json.load(fp)
+
+        return channel_data
 
     def _channel_videos(self, cache_file: str, earliest_date: datetime, channel_id_list: List[str]):
         """
@@ -232,6 +264,12 @@ if __name__ == "__main__":
     command_args = parse.parse_args()
 
     data_class = BrainBlazeInfoGraphic(api_key=command_args.youtubeapikey)
+    channel_list = []
+    for channel_entry in data_class.channels:
+        channel_list.append(channel_entry['title'])
+    channel_list.sort()
+    channel_list.remove('Brain Blaze')
+    channel_list.insert(0, 'Brain Blaze')
 
     # inforgraphic
     three_month_videos = data_class.DataFrame
@@ -264,10 +302,21 @@ if __name__ == "__main__":
                                [{"type": "domain"}, {"type": "domain"}, {"type": "domain"}, {"type": "domain"}]])
 
     data_to_plot = grouped_duration.unstack('Channel').loc[midight_12_week_ago_monday:midnight_monday]
-    for index, channel in enumerate(three_month_videos['Channel'].unique()):
+    # add data for missing channels
+    inactive_channel=[]
+    for channel in channel_list:
+        if channel not in data_to_plot.columns:
+            data_to_plot[channel] = 0
+            inactive_channel.append(channel)
+
+    for index, channel in enumerate(channel_list):
+        if channel in inactive_channel:
+            channel_name = f'{channel} (inactive)'
+        else:
+            channel_name = channel
         fig.add_trace(go.Scatter(x=data_to_plot.index,
                                  y=data_to_plot[channel].values,
-                                 name=channel,
+                                 name=channel_name,
                                  hoverinfo='x+y',
                                  legendgroup='Channels',
                                  legendgrouptitle={'text':'Channel'},
@@ -324,6 +373,18 @@ if __name__ == "__main__":
 
     fig.write_image('bb_infographic.png', engine='kaleido')
 
+    data_for_this_week = data_to_plot.loc[minight_last_monday]
+    pull = np.zeros(len(channel_list))
+    pie_channels = list(data_for_this_week.index.values)
+    pull[pie_channels.index('Brain Blaze')] = 0.2
+
+    fig2 = go.Figure(data=[go.Pie(labels=pie_channels, values=list(data_for_this_week.values), textinfo='label+percent',
+                           insidetextorientation='radial', pull=pull)])
+    fig2.update_layout(height=1000, width=1000,
+                      title_text=f'Office of Basement Accountability, weekly breakdown ending {midnight_monday:%d %b %Y} by Video Duration',
+                      title_x=0.5)
+    fig2.write_image('bb_piechart.png', engine='kaleido')
+
     auth = tweepy.OAuthHandler(consumer_key=command_args.twitter_consumer_key,
                                consumer_secret=command_args.twitter_consumer_secret)
     auth.set_access_token(key=command_args.twitter_access_token,
@@ -336,4 +397,10 @@ if __name__ == "__main__":
     response = twitter_api.media_upload('bb_infographic.png')
     media_list.append(response.media_id_string)
     twitter_api.update_status('Weekly report from the Office of Basement Accountability',
+                              media_ids=media_list)
+
+    media_list = []
+    response = twitter_api.media_upload('bb_piechart.png')
+    media_list.append(response.media_id_string)
+    twitter_api.update_status('Weekly @SimonWhistler Output Breakdown',
                               media_ids=media_list)
