@@ -373,13 +373,13 @@ if __name__ == "__main__":
 
     fig.write_image('bb_infographic.png', engine='kaleido')
 
-    data_for_this_week = data_to_plot.loc[minight_last_monday]
+    data_for_this_week = data_to_plot.loc[midnight_monday].fillna(0)
     pull = np.zeros(len(channel_list))
     pie_channels = list(data_for_this_week.index.values)
     pull[pie_channels.index('Brain Blaze')] = 0.2
 
     fig2 = go.Figure(data=[go.Pie(labels=pie_channels, values=list(data_for_this_week.values), textinfo='label+percent',
-                           insidetextorientation='radial', pull=pull)])
+                           insidetextorientation='radial', pull=pull, showlegend=False)])
     fig2.update_layout(height=1000, width=1000,
                       title_text=f'Office of Basement Accountability, weekly breakdown ending {midnight_monday:%d %b %Y} by Video Duration',
                       title_x=0.5)
