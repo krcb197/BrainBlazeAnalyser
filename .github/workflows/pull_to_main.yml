@@ -1,0 +1,30 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Prepull to main checks
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v2
+      with:
+        python-version: "3.10"
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - name: Generate Report
+      run: |
+        python BrainBlazeInfoGraphic.py -youtubeapikey ${{ secrets.YOUTUBE_API_KEY }} -twitter_consumer_key ${{ secrets.TWITTER_CONSUMER_KEY}} -twitter_consumer_secret ${{ secrets.TWITTER_CONSUMER_SECRET}} -twitter_access_token ${{ secrets.TWITTER_ACCESS_TOKEN}} -twitter_access_secret ${{ secrets.TWITTER_ACCESS_SECRET}} -test_mode -test_mode_dm_user_name {{secrets.TEST_MODE_DM_TARGET}}
+        python DailyBrainBlaze.py -youtubeapikey ${{ secrets.YOUTUBE_API_KEY }} -twitter_consumer_key ${{ secrets.TWITTER_CONSUMER_KEY}} -twitter_consumer_secret ${{ secrets.TWITTER_CONSUMER_SECRET}} -twitter_access_token ${{ secrets.TWITTER_ACCESS_TOKEN}} -twitter_access_secret ${{ secrets.TWITTER_ACCESS_SECRET}} -test_mode -test_mode_dm_user_name {{secrets.TEST_MODE_DM_TARGET}}
+

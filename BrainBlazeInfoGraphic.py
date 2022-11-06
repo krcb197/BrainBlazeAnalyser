@@ -257,6 +257,8 @@ parse.add_argument('-twitter_consumer_key', type=str, required=True)
 parse.add_argument('-twitter_consumer_secret', type=str, required=True)
 parse.add_argument('-twitter_access_token', type=str, required=True)
 parse.add_argument('-twitter_access_secret', type=str, required=True)
+parse.add_argument('-test_mode', action='store_true')
+parse.add_argument('-test_mode_dm_user_name', type=str)
 
 
 if __name__ == "__main__":
@@ -394,13 +396,32 @@ if __name__ == "__main__":
     twitter_api = tweepy.API(auth)
 
     media_list = []
-    response = twitter_api.media_upload('bb_infographic.png')
-    media_list.append(response.media_id_string)
-    twitter_api.update_status('Weekly report from the Office of Basement Accountability',
-                              media_ids=media_list)
+    media_response = twitter_api.media_upload('bb_infographic.png')
+    media_list.append(media_response.media_id_string)
+
+    if command_args.test_mode:
+        lookup_results = twitter_api.lookup_users(screen_name=[command_args.test_mode_dm_user_name],
+                                                  include_entities=False)
+        dm_user_id = lookup_results[0].id
+
+    if command_args.test_mode:
+        twitter_api.send_direct_message(recipient_id=dm_user_id,
+                                        attachment_media_id=media_response.media_id,
+                                        attachment_type='media',
+                                        text='strip chart test')
+    else:
+        twitter_api.update_status('Weekly report from the Office of Basement Accountability',
+                                  media_ids=media_list)
+
 
     media_list = []
-    response = twitter_api.media_upload('bb_piechart.png')
-    media_list.append(response.media_id_string)
-    twitter_api.update_status('Weekly @SimonWhistler Output Breakdown',
-                              media_ids=media_list)
+    media_response = twitter_api.media_upload('bb_piechart.png')
+    media_list.append(media_response.media_id_string)
+    if command_args.test_mode:
+        twitter_api.send_direct_message(recipient_id=dm_user_id,
+                                        attachment_media_id=media_response.media_id,
+                                        attachment_type='media',
+                                        text='pie chart test')
+    else:
+        twitter_api.update_status('Weekly @SimonWhistler Output Breakdown',
+                                  media_ids=media_list)
