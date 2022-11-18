@@ -2,10 +2,12 @@
 import time
 import json
 import os
+import argparse
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
+
 import re
 from datetime import timedelta, datetime, timezone
 from dateutil.parser import isoparse
@@ -60,25 +62,8 @@ class BrainBlazeDataSet:
                                 day=1,
                                 tzinfo=timezone.utc)
 
-    # YouTube Channel ID other Simon Whistler YouTube channels, thise are used to make sure
-    # Simon is not overly focusing on the "wrong" channels
-    other_whistler_channels = ['UClnDI2sdehVm1zm_LmUHsjQ',  # Biographics
-                               'UCHKRfxkMTqiiv4pF99qGKIw',  # Geographics
-                               'UCnb-VTwBHEV3gtiB9di9DZQ',  # History Highlights
-                               'UC0woBco6Dgcxt0h8SwyyOmw',  # Megaprojects
-                               'UC3Wn3dABlgESm8Bzn8Vamgg',  # Side Projects
-                               'UCVH8lH7ZLDUe_d9mZ3dlyYQ',  # xplrd
-                               'UCf-U0uPVQZtcqXUWa_Hl4Mw',  # Into the shadows
-                               'UCp1tsmksyf6TgKFMdt8-05Q',  # Casual Crimalist
-                               'UCQ-hpFPF4nOKoKPEAZM_THw',  # Top Tenz
-                               'UC64UiPJwM_e9AqAd7RiD7JA',  # Today I found Out
-                               'UCZdWrz8pF6B5Y_c6Zi6pmdQ',  # decoding the unknown
-                               'UC9h8BDcXwkhZtnqoQJ7PggA']  # Warographics
-
     # YouTube heavily restrict their API usage, to help manage daily allowances, this library uses
     # a data cache, stored in some JSON files
-    _other_whistler_video_fn = 'other_videos.json'
-    _detailed_other_whistler_video_fn = 'detailed_other_videos.json'
     _brain_blaze_video_fn = 'brain_blaze_videos.json'
     _detailed_blaze_video_fn = 'detailed_brain_blaze_videos.json'
 
@@ -92,9 +77,7 @@ class BrainBlazeDataSet:
         # retrieves data on every brain blaze video ever made but restricts other channels to the
         # last three months
         self.brain_blaze_videos = self.retrieve_brain_blaze_videos()
-        self.other_whistler_videos = self.retrieve_other_whistler_video()
         self.brain_blaze_videos_detail = self.retrieve_brain_blaze_videos_details()
-        self.other_videos_detail = self.retrieve_other_videos_details()
 
     def retrieve_brain_blaze_videos(self):
 
@@ -102,21 +85,10 @@ class BrainBlazeDataSet:
                                    channel_id_list=[self.brain_blaze_channel_ID],
                                    earliest_date=self.dawn_brain_blaze)
 
-    def retrieve_other_whistler_video(self):
-
-        return self.channel_videos(cache_file=self._other_whistler_video_fn,
-                                   channel_id_list=self.other_whistler_channels,
-                                   earliest_date=three_month_back)
-
     def retrieve_brain_blaze_videos_details(self):
 
         return self.video_details(cache_file=self._detailed_blaze_video_fn,
                                   videos=self.brain_blaze_videos)
-
-    def retrieve_other_videos_details(self):
-
-        return self.video_details(cache_file=self._detailed_other_whistler_video_fn,
-                                  videos=self.other_whistler_videos)
 
     def channel_videos(self, cache_file: str, earliest_date: datetime, channel_id_list: List[str]):
         """
@@ -254,8 +226,8 @@ class BrainBlazeDataSet:
         video_id_list = []
         channel_list = []
 
-        videos = self.brain_blaze_videos + self.other_whistler_videos
-        videos_detail = self.brain_blaze_videos_detail + self.other_videos_detail
+        videos = self.brain_blaze_videos
+        videos_detail = self.brain_blaze_videos_detail
 
         for (video_summary, video_data) in zip(videos, videos_detail):
 
@@ -263,9 +235,7 @@ class BrainBlazeDataSet:
             if duration is None:
                 continue
 
-            assert video_summary['video_id'] == video_data['video_id']
-
-            channel_list.append(video_summary['channel'])
+            channel_list.append(video_data['Channel'])
             duration_list.append(duration.total_seconds())
             published_list.append(isoparse(video_data['publishedAt']))
             stream_list.append('liveStreamingDetails' in video_data.keys())
@@ -325,7 +295,14 @@ class BrainBlazeDataSet:
 
         return to_return
 
+parse = argparse.ArgumentParser(description='Weekly Office of Basement accountability generator')
+parse.add_argument('-youtubeapikey', type=str, required=True)
+
 if __name__ == "__main__":
+
+    command_args = parse.parse_args()
+
+    data_class = BrainBlazeDataSet(api_key=command_args.youtubeapikey)
 
     with open('.krcb197_google_API_key') as fp:
         api_key=fp.readlines()
@@ -335,104 +312,42 @@ if __name__ == "__main__":
     video_DataFrame = data_class.DataFrame
     video_DataFrame_noStreams = data_class.scripted_blaze_DataFrame
 
-    # make a plot of the data
-    fig, ax = plt.subplots(nrows=2, ncols=1, sharex=True, figsize=(16, 9))
-    ax[0].plot(video_DataFrame_noStreams['Published Time'], video_DataFrame_noStreams['Duration (s)'] / 60, 'x')
-    ax[0].set_ylabel('Duration (Min)')
-    ax[0].set_xlabel('Published Date')
-    ax[0].set_title('Individual Videos')
-    ax[0].grid()
+    video_DataFrame_noStreams.sort_values('Published Time', inplace=True)
 
+    plt.figure()
+    non_epic = video_DataFrame_noStreams[video_DataFrame_noStreams['Duration (s)'] / 60 < 80]
+    epic =  video_DataFrame_noStreams[video_DataFrame_noStreams['Duration (s)'] / 60 >= 80]
+    plt.plot(video_DataFrame_noStreams['Published Time'][9:],
+             np.convolve(video_DataFrame_noStreams['Duration (s)'] / 60, np.ones(10) / 10)[9:-9],
+             linewidth=5,
+             color='grey',
+             label='10 Video rolling average')
+    plt.plot(non_epic['Published Time'], non_epic['Duration (s)'] / 60, 'x', markerfacecolor='blue', markersize=7)
+    plt.plot(epic['Published Time'], epic['Duration (s)'] / 60, marker='*', markersize=20,
+             markerfacecolor='yellow', markeredgecolor='red', linestyle='None', label='Epic Blaze')
+    plt.ylabel('Duration (Min)')
+    plt.ylabel('Video Duration (Min)')
+    plt.xlabel('Published Date')
+    plt.grid()
+    plt.title('Brain Blaze Video Duration by publication date')
+    plt.legend()
+    ax = plt.gca()
 
-    grouped_weeks = video_DataFrame_noStreams.groupby([pd.Grouper(key='Published Time', freq='W-MON')])['Duration (s)'].sum()
-    ax[1].plot(grouped_weeks.index, grouped_weeks / 60, 'x')
-    ax[1].plot(grouped_weeks.index[3:], np.convolve(grouped_weeks / 60, np.ones(4)/4)[3:-3], label='4 Week rolling average')
-    ax[1].set_ylabel('Total Video Minutes per Week')
-    ax[1].set_xlabel('Analysis Week')
-    ax[1].set_title('Videos grouped by calendar week')
-    ax[1].grid()
-    ax[1].legend()
-    fig.autofmt_xdate()
+    x_lim = ax.get_xlim()
+    ax.hlines(y=80, xmin=x_lim[0], xmax=x_lim[1])
+    ax.set_xlim(x_lim)
 
-
-    fig.suptitle('Brain Blaze (formally Business Blaze) - YouTube Content')
-
-    fig.savefig('BrainBlazeAnalysis.png')
-    #plt.close(fig)
-
-    # make a plot of the data
-    fig, ax = plt.subplots(nrows=2, ncols=1, sharex=True, figsize=(16, 9))
-    ax[0].plot(video_DataFrame_noStreams['Published Time'],
-               video_DataFrame_noStreams['Views Seconds'], 'x')
-    ax[0].set_ylabel('Eyeball Duration')
-    ax[0].set_xlabel('Published Date')
-    ax[0].set_title('Individual Videos')
-    ax[0].grid()
-
-    grouped_weeks = \
-    video_DataFrame_noStreams.groupby([pd.Grouper(key='Published Time', freq='W-MON')])[
-        'Views Seconds'].sum()
-    ax[1].plot(grouped_weeks.index, grouped_weeks, 'x')
-    ax[1].plot(grouped_weeks.index[3:], np.convolve(grouped_weeks, np.ones(4) / 4)[3:-3],
-               label='4 Week rolling average')
-    ax[1].set_ylabel('Total Eyeball Seconds per Week')
-    ax[1].set_xlabel('Analysis Week')
-    ax[1].set_title('Videos grouped by calendar week')
-    ax[1].grid()
-    ax[1].legend()
-    fig.autofmt_xdate()
-
-    fig.suptitle('Brain Blaze (formally Business Blaze) - YouTube Content')
-    plt.close(fig)
-
-    #fig.savefig('BrainBlazeAnalysis.png')
-
-    ax_ratio = [None, None, None, None]
-    fig, ax = plt.subplots(nrows=4, ncols=1, sharex=True, figsize=(16, 9))
-    ax[0].plot(video_DataFrame_noStreams['Published Time'],
-               video_DataFrame_noStreams['Views'], 'bx')
-    ax[0].set_ylabel('Views', color='b')
-    ax[1].plot(video_DataFrame_noStreams['Published Time'],
-               video_DataFrame_noStreams['Likes'], 'bx')
-    ax[1].set_ylabel('Likes', color='b')
-    ax_ratio[1] = ax[1].twinx()
-    ax_ratio[1].plot(video_DataFrame_noStreams['Published Time'],
-               video_DataFrame_noStreams['Like:Views Ratio'], 'g+')
-    ax_ratio[1].set_ylabel('Likes Per View', color='g')
-    ax[2].plot(video_DataFrame_noStreams['Published Time'],
-               video_DataFrame_noStreams['Dislikes'], 'bx')
-    ax[2].set_ylabel('Dislikes', color='b')
-    ax_ratio[2] = ax[2].twinx()
-    ax_ratio[2].plot(video_DataFrame_noStreams['Published Time'],
-                     video_DataFrame_noStreams['Dislikes:Views Ratio'], 'g+')
-    ax_ratio[2].set_ylabel('Dislikes Per View', color='g')
-    ax[3].plot(video_DataFrame_noStreams['Published Time'],
-               video_DataFrame_noStreams['Like:Dislike Ratio'], 'g+')
-    ax[3].set_ylabel('Like:Dislike Ratio', color='g')
-    plt.close(fig)
-
-    # make a plot of the data
-    fig, ax = plt.subplots(nrows=2, ncols=1, sharex=True, figsize=(16, 9))
-    three_month_videos = video_DataFrame[video_DataFrame['Published Time'] > three_month_back ]
-    grouped_weeks = \
-    three_month_videos.groupby(['Channel',pd.Grouper(key='Published Time', freq='W-MON', origin='start_day')])[
-        'Duration (s)'].sum() / 3600
-    grouped_weeks.unstack('Channel').iloc[1:-1].plot.area(ax = ax[0])
-    fig.suptitle('Weekly report from the Office of Basement Accountability')
-
-    percentage_duration = grouped_weeks / grouped_weeks.groupby('Published Time').sum() * 100
-    percentage_duration.unstack('Channel').iloc[1:-1].plot.area(ax = ax[1])
-    ax[1].set_ylim([0, 100])
-
-    box = ax[1].get_position()
-    ax[1].set_position([box.x0, box.y0, box.width * 0.9, box.height])
-    ax[1].legend(loc='center left', bbox_to_anchor=(1, 0.5), title='Channel', title_fontsize='large')
-    ax[1].set_ylabel('Channel accumulated video duration\n'
-                     'for week as percentage of all Video Duration')
-
-    box = ax[0].get_position()
-    ax[0].set_position([box.x0, box.y0, box.width * 0.9, box.height])
-    ax[0].legend(loc='center left', bbox_to_anchor=(1, 0.5), title='Channel', title_fontsize='large')
-    ax[0].set_ylabel('Channel accumulated video duration [hours]')
-
-
+    axins = ax.inset_axes([0.7, 0.67, 0.15, 0.2])
+    axins.plot(non_epic['Published Time'], non_epic['Duration (s)'] / 60, 'x', markerfacecolor='blue', markersize=20)
+    axins.hlines(y=80, xmin=x_lim[0], xmax=x_lim[1])
+    axins.set_xlim(19305, 19310)
+    axins.set_ylim(79.3, 80.2)
+    axins.set_xticklabels([])
+    axins.set_yticklabels([])
+    near_epic_video = non_epic.loc['fGSiTjbN1Gk']
+    epic_short_fall =(80*60)-near_epic_video['Duration (s)']
+    axins.arrow(x=near_epic_video['Published Time'], y=near_epic_video['Duration (s)'] / 60, dx=0, dy=80 - (near_epic_video['Duration (s)'] / 60), shape='full', width=0.05, length_includes_head=True, head_length=0.1)
+    axins.text(x=near_epic_video['Published Time'],
+               y=np.mean([(near_epic_video['Duration (s)'] / 60), 80]),
+               s=f'{epic_short_fall}s short of epic', ha='center', va='center', bbox=dict(facecolor='white', boxstyle='round'))
+    ax.indicate_inset_zoom(axins, edgecolor="black")
