@@ -137,27 +137,10 @@ class BrainBlazeDataSet:
                 # if the file was last updated more than 24 hours ago do an update
 
                 # find the latest video publish date in the set of videos read from the cache
-                video_ID = []
-                last_date_of_interest = earliest_date
-                for video in videos:
-                    video_ID.append(video['video_id'])
-                    video_pub_at = isoparse(video['publishedAt'])
-                    if video_pub_at > last_date_of_interest:
-                        last_date_of_interest = video_pub_at
+                videos = get_videos(earliest_date)
 
-                new_videos = get_videos(last_date_of_interest)
-
-                # deduplicate any video found that may have been in the original list
-                for video in new_videos:
-                    if video['video_id'] in video_ID:
-                        new_videos.remove(video)
-
-                # if there are new videos found from the search, then write back out the cache file
-                if len(new_videos) > 0:
-                    videos += new_videos
-
-                    with open(cache_file, 'w') as fp:
-                        json.dump(videos, fp)
+                with open(cache_file, 'w') as fid:
+                    json.dump(videos, fid)
             else:
                 print(f'{cache_file=} is less than 24 hours old no update performed')
 
