@@ -260,6 +260,7 @@ class BrainBlazeDataSet:
         DataFrame['Like:Views Ratio'] = DataFrame['Likes'] / DataFrame['Views']
         DataFrame['Dislikes:Views Ratio'] = DataFrame['Dislikes'] / DataFrame['Views']
         DataFrame['Views Seconds'] = DataFrame['Duration (s)'] * DataFrame['Views']
+        DataFrame['Writer'] = ''
 
         return DataFrame
 
@@ -309,8 +310,8 @@ if __name__ == "__main__":
 
     data_class = BrainBlazeDataSet(api_key=api_key)
 
-    video_DataFrame = data_class.DataFrame
     video_DataFrame_noStreams = data_class.scripted_blaze_DataFrame
+    video_DataFrame_noStreams['XatOAULW03c'] = 'Liam Bird'
 
     video_DataFrame_noStreams.sort_values('Published Time', inplace=True)
 
