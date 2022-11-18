@@ -260,7 +260,7 @@ class BrainBlazeDataSet:
         DataFrame['Like:Views Ratio'] = DataFrame['Likes'] / DataFrame['Views']
         DataFrame['Dislikes:Views Ratio'] = DataFrame['Dislikes'] / DataFrame['Views']
         DataFrame['Views Seconds'] = DataFrame['Duration (s)'] * DataFrame['Views']
-        DataFrame['Writer'] = ''
+        DataFrame['Writer'] = 'Unknown'
 
         return DataFrame
 
@@ -294,6 +294,9 @@ class BrainBlazeDataSet:
         # Announcement that the channel was renamed from Business Blaze to Brain Blaze
         to_return = to_return.drop(index='4E_MFtFKAgQ')
 
+        #
+        to_return = to_return.drop(index='vI7v3D9OQ7g')
+
         return to_return
 
 parse = argparse.ArgumentParser(description='Weekly Office of Basement accountability generator')
@@ -311,7 +314,11 @@ if __name__ == "__main__":
     data_class = BrainBlazeDataSet(api_key=api_key)
 
     video_DataFrame_noStreams = data_class.scripted_blaze_DataFrame
-    video_DataFrame_noStreams['XatOAULW03c'] = 'Liam Bird'
+    video_DataFrame_noStreams.at['XatOAULW03c','Writer'] = 'Liam Bird'
+    # Kevin Jennings groups his Brain Blaze Videos by a YouTube Play list
+    kevin_videos = data_class.easy_wrapper.get_playlist(playlist_id='PLrwYSRD-7tO0W4gc-6hlZ8895JJ7FZVQC')
+    for kevin_video in kevin_videos:
+        video_DataFrame_noStreams.at[kevin_video['video_id'], 'Writer'] = 'Kevin Jennings'
 
     video_DataFrame_noStreams.sort_values('Published Time', inplace=True)
 

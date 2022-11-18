@@ -19,7 +19,6 @@ class ExtendedYoutubeEasyWrapper(YoutubeEasyWrapper):
             kwargs['order'] = kwargs['order']
         else:
             kwargs['order'] = 'relevance'
-        #kwargs['part'] = 'id,snippet'
         kwargs['part'] = 'id'
         kwargs['type'] = 'video'
 
@@ -42,11 +41,7 @@ class ExtendedYoutubeEasyWrapper(YoutubeEasyWrapper):
         output = []
         for item in items:
             result = dict()
-            #result['title'] = item['snippet']['title']
-            #result['channel'] = item['snippet']['channelTitle']
             result['video_id'] = item['id']['videoId']
-            #result['channel_id'] = item['snippet']['channelId']
-            #result['publishedAt'] = item['snippet']['publishedAt']
             output.append(result)
 
         return output
@@ -96,6 +91,7 @@ class ExtendedYoutubeEasyWrapper(YoutubeEasyWrapper):
                 output_record['description'] = result['snippet']['description']
                 output_record['publishedAt'] = result['snippet']['publishedAt']
                 output_record['contentDetails'] = result['contentDetails']
+                output_record['Channel'] = result['snippet']['channelTitle']
                 if 'liveStreamingDetails' in result.keys():
                     output_record['liveStreamingDetails'] = result['liveStreamingDetails']
                 output_record['statistics'] = result['statistics']
@@ -114,6 +110,7 @@ class ExtendedYoutubeEasyWrapper(YoutubeEasyWrapper):
             output['description'] = results[0]['snippet']['description']
             output['publishedAt'] = results[0]['snippet']['publishedAt']
             output['contentDetails'] = results[0]['contentDetails']
+            output['Channel'] = results[0]['snippet']['channelTitle']
             if 'liveStreamingDetails' in results[0].keys():
                 output['liveStreamingDetails'] = results[0]['liveStreamingDetails']
             output['statistics'] = results[0]['statistics']
@@ -123,5 +120,35 @@ class ExtendedYoutubeEasyWrapper(YoutubeEasyWrapper):
                                                                  part='snippet',
                                                                  videoId=results[0]['id'],
                                                                  textFormat='plainText')
+
+        return output
+
+    def get_playlist(self, playlist_id:str, **kwargs):
+
+        kwargs['playlistId'] = playlist_id
+        kwargs['maxResults'] = 50  # maximum number supported by the API
+        kwargs['part'] = 'snippet'
+
+        items = []
+        results = self.service.playlistItems().list(**kwargs).execute()
+
+        current_page = 0
+        max_pages = 30000
+        while results and current_page < max_pages:
+            items.extend(results['items'])
+
+            if 'nextPageToken' in results:
+                kwargs['pageToken'] = results['nextPageToken']
+                sleep(1)
+                results = self.service.playlistItems().list(**kwargs).execute()
+                current_page += 1
+            else:
+                break
+
+        output = []
+        for item in items:
+            result = dict()
+            result['video_id'] = item['snippet']['resourceId']['videoId']
+            output.append(result)
 
         return output
