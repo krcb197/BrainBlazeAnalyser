@@ -359,3 +359,10 @@ if __name__ == "__main__":
                y=np.mean([(near_epic_video['Duration (s)'] / 60), 80]),
                s=f'{epic_short_fall}s short of epic', ha='center', va='center', bbox=dict(facecolor='white', boxstyle='round'))
     ax.indicate_inset_zoom(axins, edgecolor="black")
+
+    writer_fig = plt.figure()
+    ax = plt.gca()
+    writer_summary = video_DataFrame_noStreams.groupby('Writer')['Duration (s)'].sum() / 60
+    writer_summary.plot(kind='pie', autopct='%.5f%%', pctdistance=1.2, labeldistance=1.5,
+                        ylabel='',
+                        title='Cumulative Total of Brain Blaze Video Duration by Writer')
