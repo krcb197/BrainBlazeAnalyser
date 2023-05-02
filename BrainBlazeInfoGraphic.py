@@ -360,7 +360,7 @@ if __name__ == "__main__":
         mode="gauge+number+delta",
         value=grouped_duration.unstack('Channel').fillna(0)['Brain Blaze'].loc[midnight_monday],
         delta={'reference': grouped_duration.unstack('Channel').fillna(0)['Brain Blaze'].loc[minight_last_monday]},
-        gauge={'axis': {'range': [0, grouped_duration.groupby('Channel').max()['Brain Blaze']]},
+        gauge={'axis': {'range': [0, grouped_duration.groupby('Channel').max()['Brain Blaze'] * 1.2]},
                'threshold': {'value': grouped_duration.groupby('Channel').mean()['Brain Blaze']}},
         title={'text': "Brain Blaze<br>duration (minutes)"}),
                   row=2, col=4)
