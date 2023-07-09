@@ -317,14 +317,14 @@ if __name__ == "__main__":
     plt.xlabel('Published Date')
     plt.grid()
     plt.title('Brain Blaze Video Duration by publication date')
-    plt.legend()
+    plt.legend(loc='lower right')
     ax = plt.gca()
 
     x_lim = ax.get_xlim()
     ax.hlines(y=80, xmin=x_lim[0], xmax=x_lim[1])
     ax.set_xlim(x_lim)
 
-    axins = ax.inset_axes([0.7, 0.67, 0.15, 0.2])
+    axins = ax.inset_axes([0.65, 0.67, 0.10, 0.2])
     axins.plot(non_epic['Published Time'], non_epic['Duration (s)'] / 60, 'x', markerfacecolor='blue', markersize=20)
     axins.hlines(y=80, xmin=x_lim[0], xmax=x_lim[1])
     axins.set_xlim(19305, 19310)
@@ -339,9 +339,20 @@ if __name__ == "__main__":
                s=f'{epic_short_fall}s short of epic', ha='center', va='center', bbox=dict(facecolor='white', boxstyle='round'))
     ax.indicate_inset_zoom(axins, edgecolor="black")
 
-    writer_fig = plt.figure()
-    ax = plt.gca()
-    writer_summary = video_DataFrame_noStreams.groupby('Writer')['Duration (s)'].sum() / 60
-    writer_summary.plot(kind='pie', autopct='%.5f%%', pctdistance=1.2, labeldistance=1.5,
-                        ylabel='',
-                        title='Cumulative Total of Brain Blaze Video Duration by Writer')
+    axins2 = ax.inset_axes([0.85, 0.67, 0.10, 0.2])
+    axins2.plot(non_epic['Published Time'], non_epic['Duration (s)'] / 60, 'x',markerfacecolor='blue', markersize=20)
+    axins2.hlines(y=80, xmin=x_lim[0], xmax=x_lim[1])
+    near_epic_video2 = non_epic.loc['BeENuSmXk-Y']
+    axins2.set_xlim(19533, 19536)
+    axins2.set_ylim(78, 80.2)
+    axins2.set_xticklabels([])
+    axins2.set_yticklabels([])
+    epic_short_fall = (80 * 60) - near_epic_video2['Duration (s)']
+    axins2.arrow(x=near_epic_video2['Published Time'], y=near_epic_video2['Duration (s)'] / 60,
+                dx=0, dy=80 - (near_epic_video2['Duration (s)'] / 60), shape='full', width=0.05,
+                length_includes_head=True, head_length=0.1)
+    axins2.text(x=near_epic_video2['Published Time'],
+               y=np.mean([(near_epic_video2['Duration (s)'] / 60), 80]),
+               s=f'{epic_short_fall}s short of epic', ha='center', va='center',
+               bbox=dict(facecolor='white', boxstyle='round'))
+    ax.indicate_inset_zoom(axins2, edgecolor="black")
