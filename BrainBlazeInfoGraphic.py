@@ -1,5 +1,5 @@
 
-from typing import List
+
 import datetime
 import time
 import json
@@ -85,8 +85,8 @@ class BrainBlazeInfoGraphic:
         if os.path.isfile(self._channel_cache_fn) is False:
             channel_data = self.easy_wrapper.channel(channelID=','.join(self.whistler_channels))
 
-            with open(self._channel_cache_fn, 'w') as fp:
-                json.dump(channel_data, fp)
+            with open(self._channel_cache_fn, 'w') as fid:
+                json.dump(channel_data, fid)
 
         else:
             last_update_time = os.path.getmtime(self._channel_cache_fn)
@@ -98,18 +98,18 @@ class BrainBlazeInfoGraphic:
                 # The cache file does not exist and must be generated from scratch
                 channel_data = self.easy_wrapper.channel(channelID=','.join(self.whistler_channels))
 
-                with open(self._channel_cache_fn, 'w') as fp:
-                    json.dump(channel_data, fp)
+                with open(self._channel_cache_fn, 'w') as fid:
+                    json.dump(channel_data, fid)
             else:
                 print(f'{self._channel_cache_fn=} is less than 24 hours old no update performed')
 
                 # cache file exists and must be updated
-                with open(self._channel_cache_fn) as fp:
-                    channel_data = json.load(fp)
+                with open(self._channel_cache_fn) as fid:
+                    channel_data = json.load(fid)
 
         return channel_data
 
-    def _channel_videos(self, cache_file: str, earliest_date: datetime, channel_id_list: List[str]):
+    def _channel_videos(self, cache_file: str, earliest_date: datetime, channel_id_list: list[str]):
         """
         Search for Video published on a channel (or list of channels), this has two modes of
         operation, depending on whether the cache exists or not:
@@ -141,8 +141,8 @@ class BrainBlazeInfoGraphic:
             # The cache file does not exist and must be generated from scratch
             videos = get_videos(earliest_date)
 
-            with open(cache_file, 'w') as fp:
-                json.dump(videos, fp)
+            with open(cache_file, 'w') as fid:
+                json.dump(videos, fid)
 
         else:
             last_update_time = os.path.getmtime(cache_file)
@@ -154,14 +154,14 @@ class BrainBlazeInfoGraphic:
                 # The cache file does not exist and must be generated from scratch
                 videos = get_videos(earliest_date)
 
-                with open(cache_file, 'w') as fp:
-                    json.dump(videos, fp)
+                with open(cache_file, 'w') as fid:
+                    json.dump(videos, fid)
             else:
                 print(f'{cache_file=} is less than 24 hours old no update performed')
 
                 # cache file exists and must be updated
-                with open(cache_file) as fp:
-                    videos = json.load(fp)
+                with open(cache_file) as fid:
+                    videos = json.load(fid)
 
         return videos
 
@@ -213,8 +213,8 @@ class BrainBlazeInfoGraphic:
 
             videos_details = self._get_videos_meta_data(video_id_list)
 
-            with open(cache_file, 'w') as fp:
-                json.dump(videos_details, fp)
+            with open(cache_file, 'w') as fid:
+                json.dump(videos_details, fid)
         else:
 
 
@@ -225,34 +225,34 @@ class BrainBlazeInfoGraphic:
                 # if the file was last updated more than 24 hours ago do an update
                 videos_details = self._get_videos_meta_data(video_id_list)
 
-                with open(cache_file, 'w') as fp:
-                    json.dump(videos_details, fp)
+                with open(cache_file, 'w') as fid:
+                    json.dump(videos_details, fid)
             else:
                 print(f'{cache_file=} is less than 24 hours old no update performed')
 
-                with open(cache_file) as fp:
-                    videos_details = json.load(fp)
+                with open(cache_file) as fid:
+                    videos_details = json.load(fid)
 
         return videos_details
 
     @property
     def _df_videos_details(self):
 
-        b = pd.DataFrame(self.videos_detail)
-        b.set_index('video_id', inplace=True)
-        b['Published Time'] = b['publishedAt'].apply(isoparse)
-        b.drop('publishedAt', axis=1, inplace=True)
-        b['Duration (s)'] = b['duration'].apply(ISO8601_duration_to_time_delta).dt.total_seconds()
-        b.drop('duration', axis=1, inplace=True)
+        prelim_df = pd.DataFrame(self.videos_detail)
+        prelim_df.set_index('video_id', inplace=True)
+        prelim_df['Published Time'] = prelim_df['publishedAt'].apply(isoparse)
+        prelim_df.drop('publishedAt', axis=1, inplace=True)
+        prelim_df['Duration (s)'] = prelim_df['duration'].apply(ISO8601_duration_to_time_delta).dt.total_seconds()
+        prelim_df.drop('duration', axis=1, inplace=True)
 
-        return b.drop_duplicates(keep='last')
+        return prelim_df.drop_duplicates(keep='last')
 
     @property
-    def DataFrame(self):
+    def data_frame(self):
 
         return self._df_videos_details
 
-parse = argparse.ArgumentParser(description='Weekly Office of Basement accountabilit generator')
+parse = argparse.ArgumentParser(description='Weekly Office of Basement accountability generator')
 parse.add_argument('-youtubeapikey', type=str, required=True)
 parse.add_argument('-twitter_consumer_key', type=str, required=True)
 parse.add_argument('-twitter_consumer_secret', type=str, required=True)
@@ -275,11 +275,10 @@ if __name__ == "__main__":
     channel_list.insert(0, 'Brain Blaze')
 
     # inforgraphic
-    three_month_videos = data_class.DataFrame
+    three_month_videos = data_class.data_frame
 
     # remove a 12 hour The Casual Criminalist which is a re-release of previous videos
     three_month_videos.drop(index=['3aXPgSBoeFY'], inplace=True, errors='ignore')
-    
     # remove a 12 hour deciding the unknown video which is a re-release of previous videos
     three_month_videos.drop(index=['Ncqt4XSQK4Y'], inplace=True, errors='ignore')
 
