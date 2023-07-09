@@ -95,7 +95,7 @@ class YouTubeWrapper(GoogleAPIBase):
 
         return output
 
-    def get_metadata(self, video_id, include_comments=True):
+    def get_metadata(self, video_id):
         list_videos_by_id = self.service.videos().list(id=video_id,
                                                        part="id, snippet, contentDetails, statistics, liveStreamingDetails").execute()
         results = list_videos_by_id.get("items", [])
@@ -116,11 +116,6 @@ class YouTubeWrapper(GoogleAPIBase):
                     output_record['liveStreamingDetails'] = result['liveStreamingDetails']
                 output_record['statistics'] = result['statistics']
 
-                if ('commentCount' in result['statistics']) and (include_comments is True):
-                    output_record['comments'] = self.extract_video_comments(self.service,
-                                                                     part='snippet',
-                                                                     videoId=result['id'],
-                                                                     textFormat='plainText')
                 output.append(output_record)
         else:
             output = dict.fromkeys(['video_id', 'title', 'description', 'publishedAt', 'tags', 'contentDetails', 'statistics'], None)
@@ -134,12 +129,6 @@ class YouTubeWrapper(GoogleAPIBase):
             if 'liveStreamingDetails' in results[0].keys():
                 output['liveStreamingDetails'] = results[0]['liveStreamingDetails']
             output['statistics'] = results[0]['statistics']
-
-            if ('commentCount' in results[0]['statistics']) and (include_comments is True):
-                output['comments'] = self.extract_video_comments(self.service,
-                                                                 part='snippet',
-                                                                 videoId=results[0]['id'],
-                                                                 textFormat='plainText')
 
         return output
 
