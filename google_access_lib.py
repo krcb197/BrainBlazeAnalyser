@@ -5,9 +5,12 @@ class was being overridden so the link was broken
 """
 import os
 
+import google.auth
 from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
 
-os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+# os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'erudite-button-341213-27201a27ceb2.json'
 
 from datetime import datetime, timezone
 from time import sleep
@@ -20,7 +23,25 @@ class GoogleAPIBase:
         self.__api_version = api_version
 
     def initialize(self, api_key):
-        self.service = build(self.__service_name, self.__api_version, developerKey=api_key)
+        creds, _ = google.auth.default()
+        self.service = build(self.__service_name, self.__api_version, credentials=creds)
+
+class DriveWrapper(GoogleAPIBase):
+
+    def __init__(self):
+        super().__init__(service_name='drive', api_version='v3')
+
+    def upload_basic(self, filename):
+
+        file_metadata = {'name': filename}
+        media = MediaFileUpload(filename,
+                                mimetype='image/png')
+        # pylint: disable=maybe-no-member
+        file = self.service.files().create(body=file_metadata, media_body=media,
+                                      fields='id').execute()
+        print(F'File ID: {file.get("id")}')
+
+        file.get('id')
 
 class YouTubeWrapper(GoogleAPIBase):
 

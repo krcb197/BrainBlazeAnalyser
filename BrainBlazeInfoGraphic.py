@@ -15,7 +15,7 @@ import pandas as pd
 import tweepy
 
 from BrainBlazeAnalyser import ISO8601_duration_to_time_delta
-from google_access_lib import YouTubeWrapper
+from google_access_lib import YouTubeWrapper, DriveWrapper
 
 today = datetime.date.today()
 midnight_monday = datetime.datetime.combine(time=datetime.time(),
@@ -34,8 +34,6 @@ midight_12_week_ago_monday = datetime.datetime.combine(time=datetime.time(),
                                                 date=today - datetime.timedelta(days=today.weekday(),
                                                                                 weeks=12),
                                                 tzinfo=datetime.timezone.utc)
-
-import pandas as pd
 
 class BrainBlazeInfoGraphic:
     """
@@ -392,6 +390,12 @@ if __name__ == "__main__":
                       title_text=f'Office of Basement Accountability, weekly breakdown ending {midnight_monday:%d %b %Y} by Video Duration',
                       title_x=0.5)
     fig2.write_image('bb_piechart.png', engine='kaleido')
+
+    # load the files to drive
+    drive_wrapper = DriveWrapper()
+    drive_wrapper.initialize(api_key=command_args.youtubeapikey)
+    drive_wrapper.upload_basic('bb_infographic.png')
+    drive_wrapper.upload_basic('bb_piechart.png')
 
     auth = tweepy.OAuthHandler(consumer_key=command_args.twitter_consumer_key,
                                consumer_secret=command_args.twitter_consumer_secret)
