@@ -4,37 +4,43 @@ import datetime
 import time
 import json
 import os
-import numpy as np
-from dateutil.parser import isoparse
 import argparse
 
+from dateutil.parser import isoparse
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly.express as px
-
-from ExtendedYoutubeEasyWrapper import ExtendedYoutubeEasyWrapper
+import numpy as np
+import pandas as pd
+import tweepy
 
 from BrainBlazeAnalyser import ISO8601_duration_to_time_delta
-
-import tweepy
+from google_access_lib import YouTubeWrapper
 
 today = datetime.date.today()
 midnight_monday = datetime.datetime.combine(time=datetime.time(),
-                                            date=today - datetime.timedelta(days=today.weekday(), weeks=0),
+                                            date=today - datetime.timedelta(days=today.weekday(),
+                                                                            weeks=0),
                                             tzinfo=datetime.timezone.utc)
 minight_last_monday = datetime.datetime.combine(time=datetime.time(),
-                                                date=today - datetime.timedelta(days=today.weekday(), weeks=1),
+                                                date=today - datetime.timedelta(days=today.weekday(),
+                                                                                weeks=1),
                                                 tzinfo=datetime.timezone.utc)
 midight_13_week_ago_monday = datetime.datetime.combine(time=datetime.time(),
-                                                date=today - datetime.timedelta(days=today.weekday(), weeks=13),
+                                                date=today - datetime.timedelta(days=today.weekday(),
+                                                                                weeks=13),
                                                 tzinfo=datetime.timezone.utc)
 midight_12_week_ago_monday = datetime.datetime.combine(time=datetime.time(),
-                                                date=today - datetime.timedelta(days=today.weekday(), weeks=12),
+                                                date=today - datetime.timedelta(days=today.weekday(),
+                                                                                weeks=12),
                                                 tzinfo=datetime.timezone.utc)
 
 import pandas as pd
 
 class BrainBlazeInfoGraphic:
+    """
+    class for retrieving data about Simon Whistler YouTube Channels
+    """
 
     # YouTube Channel ID other Simon Whistler YouTube channels, thise are used to make sure
     # Simon is not overly focusing on the "wrong" channels
@@ -60,7 +66,7 @@ class BrainBlazeInfoGraphic:
 
     def __init__(self, api_key):
 
-        self.easy_wrapper = ExtendedYoutubeEasyWrapper()
+        self.easy_wrapper = YouTubeWrapper()
         self.easy_wrapper.initialize(api_key=api_key)
 
         # the data set is split into brain blaze videos and other simon whistler videos, this

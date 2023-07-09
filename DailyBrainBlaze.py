@@ -7,7 +7,7 @@ import os
 from dateutil.parser import isoparse
 import argparse
 
-from ExtendedYoutubeEasyWrapper import ExtendedYoutubeEasyWrapper
+from google_access_lib import YouTubeWrapper
 
 from BrainBlazeAnalyser import ISO8601_duration_to_time_delta
 
@@ -32,7 +32,7 @@ class DailyBrainBlaze:
 
     def __init__(self, api_key):
 
-        self.easy_wrapper = ExtendedYoutubeEasyWrapper()
+        self.easy_wrapper = YouTubeWrapper()
         self.easy_wrapper.initialize(api_key=api_key)
 
         # the data set is split into brain blaze videos and other simon whistler videos, this
