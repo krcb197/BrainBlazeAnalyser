@@ -167,6 +167,9 @@ class BrainBlazeDataSet:
             with open(cache_file, 'w') as fp:
                 json.dump(videos_details, fp)
         else:
+            with open(cache_file) as fp:
+                videos_details = json.load(fp)
+
             last_update_time = os.path.getmtime(cache_file)
             current_time = time.time()
             one_day_secs = 24 * 60 * 60
@@ -174,19 +177,19 @@ class BrainBlazeDataSet:
                 # if the file was last updated more than 24 hours ago do an update
 
                 video_id_list = self._get_video_id_list(videos=videos)
-                videos_details = []
+                detailed_video_id_list = self._get_video_id_list(videos=videos_details)
 
                 for video_id in video_id_list:
+                    if video_id not in detailed_video_id_list:
 
-                    video_detail = self.easy_wrapper.get_metadata(video_id=video_id)
-                    videos_details.append(video_detail)
+                        video_detail = self.easy_wrapper.get_metadata(video_id=video_id,
+                                                                      include_comments=False)
+                        videos_details.append(video_detail)
 
-                with open(cache_file, 'w') as fp:
-                    json.dump(videos_details, fp)
+                    with open(cache_file, 'w') as fp:
+                        json.dump(videos_details, fp)
             else:
                 print(f'{cache_file=} is less than 24 hours old no update performed')
-                with open(cache_file) as fid:
-                    videos_details = json.load(fid)
 
 
         return videos_details
