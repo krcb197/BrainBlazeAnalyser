@@ -160,8 +160,7 @@ class BrainBlazeDataSet:
         if os.path.isfile(cache_file) is False:
             videos_details = []
             for video in videos:
-                video_detail = self.easy_wrapper.get_metadata(video_id=video['video_id'],
-                                                              include_comments=False)
+                video_detail = self.easy_wrapper.get_metadata(video_id=video['video_id'])
                 videos_details.append(video_detail)
 
 
