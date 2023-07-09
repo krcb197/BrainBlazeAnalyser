@@ -6,14 +6,13 @@ class was being overridden so the link was broken
 import os
 
 from googleapiclient.discovery import build
-from googleapiclient.http import MediaFileUpload
 
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 from datetime import datetime, timezone
 from time import sleep
 
-class _GoogleAPIBase:
+class GoogleAPIBase:
 
     def __init__(self, service_name, api_version):
         self.service = None
@@ -23,26 +22,7 @@ class _GoogleAPIBase:
     def initialize(self, api_key):
         self.service = build(self.__service_name, self.__api_version, developerKey=api_key)
 
-
-class DriveWrapper(_GoogleAPIBase):
-
-    def __init__(self):
-        super().__init__(service_name='drive', api_version='v3')
-
-    def upload_basic(self, filename:str):
-
-        file_metadata = {'name': filename}
-        media = MediaFileUpload(filename,
-                                mimetype='image/jpeg')
-
-        # pylint: disable=maybe-no-member
-        file = self.service.files().create(body=file_metadata, media_body=media,
-                                           fields='id').execute()
-        print(F'File ID: {file.get("id")}')
-
-        return file.get('id')
-
-class YouTubeWrapper(_GoogleAPIBase):
+class YouTubeWrapper(GoogleAPIBase):
 
     def __init__(self):
         super().__init__(service_name='youtube', api_version='v3')
@@ -116,9 +96,8 @@ class YouTubeWrapper(_GoogleAPIBase):
         return output
 
     def get_metadata(self, video_id):
-        parts="id, snippet, contentDetails, statistics, liveStreamingDetails"
         list_videos_by_id = self.service.videos().list(id=video_id,
-                                                       part=parts).execute()
+                                                       part="id, snippet, contentDetails, statistics, liveStreamingDetails").execute()
         results = list_videos_by_id.get("items", [])
         if len(results) > 1:
             output = []
