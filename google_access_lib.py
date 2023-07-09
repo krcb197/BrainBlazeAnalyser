@@ -1,11 +1,31 @@
 """
-This module extends the youtube easy wrapper replacing a few functions with improved versions
+This module provides access to the Google API used by the Brain Blaze Analyser, originally
+it started out as an extension to the YoutubeEasyWrapper, however, increasingly the whole
+class was being overridden so the link was broken
 """
-from youtube_easy_api.easy_wrapper import YoutubeEasyWrapper
+import os
+
+from googleapiclient.discovery import build
+
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+
 from datetime import datetime, timezone
 from time import sleep
 
-class ExtendedYoutubeEasyWrapper(YoutubeEasyWrapper):
+class GoogleAPIBase:
+
+    def __init__(self, service_name, api_version):
+        self.service = None
+        self.__service_name = service_name
+        self.__api_version = api_version
+
+    def initialize(self, api_key):
+        self.service = build(self.__service_name, self.__api_version, developerKey=api_key)
+
+class YouTubeWrapper(GoogleAPIBase):
+
+    def __init__(self):
+        super().__init__(service_name='youtube', api_version='v3')
 
     def channel_videos(self, channelID,
                        publishedAfter: datetime = datetime(year=2001, month=1, day=1,
