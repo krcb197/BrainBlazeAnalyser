@@ -6,20 +6,19 @@ import json
 import os
 from dateutil.parser import isoparse
 import argparse
+import tweepy
+import pandas as pd
 
 from google_access_lib import YouTubeWrapper
 
 from BrainBlazeAnalyser import ISO8601_duration_to_time_delta
 
-import tweepy
+
 
 today = datetime.date.today()
 one_day_old = datetime.datetime.combine(time=datetime.time(),
                                             date=today - datetime.timedelta(hours=24),
                                             tzinfo=datetime.timezone.utc)
-
-
-import pandas as pd
 
 class DailyBrainBlaze:
 
