@@ -175,20 +175,18 @@ class BrainBlazeInfoGraphic:
                     end_point = len(video_id)
 
                 results = self.easy_wrapper.service.videos().list(id=video_id[start_point:end_point],
-                                                                  part="id, snippet, contentDetails, liveStreamingDetails").execute()
+                                                                  part="id, snippet, contentDetails").execute()
                 items.extend( results.get("items", []))
 
 
         else:
             results = self.easy_wrapper.service.videos().list(id=video_id,
-                                             part="id, snippet, contentDetails, liveStreamingDetails").execute()
+                                             part="id, snippet, contentDetails").execute()
             items = results.get("items", [])
 
         output = []
         for item in items:
-            output_record = dict.fromkeys(
-                ['video_id', 'duration',
-                 'liveStreamingDetails'], None)
+            output_record = dict.fromkeys(['video_id', 'duration'], None)
 
             output_record['video_id'] = item['id']
             output_record['duration'] = item['contentDetails']['duration']
@@ -196,9 +194,6 @@ class BrainBlazeInfoGraphic:
             output_record['title'] = item['snippet']['title']
             output_record['Channel'] = item['snippet']['channelTitle']
             output_record['publishedAt'] = item['snippet']['publishedAt']
-
-            if 'liveStreamingDetails' in item.keys():
-                output_record['liveStreamingDetails'] = item['liveStreamingDetails']
 
             output.append(output_record)
 
