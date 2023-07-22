@@ -210,7 +210,6 @@ parse.add_argument('-twitter_consumer_secret', type=str, required=True)
 parse.add_argument('-twitter_access_token', type=str, required=True)
 parse.add_argument('-twitter_access_secret', type=str, required=True)
 parse.add_argument('-test_mode', action='store_true')
-parse.add_argument('-test_mode_dm_user_name', type=str)
 
 
 if __name__ == "__main__":
@@ -221,23 +220,18 @@ if __name__ == "__main__":
 
     if len(data_class) > 0:
 
-        auth = tweepy.OAuthHandler(consumer_key=command_args.twitter_consumer_key,
-                                   consumer_secret=command_args.twitter_consumer_secret)
-        auth.set_access_token(key=command_args.twitter_access_token,
-                              secret=command_args.twitter_access_secret)
-
-        twitter_api = tweepy.API(auth)
-
-        if command_args.test_mode:
-            lookup_results = twitter_api.lookup_users(
-                screen_name=[command_args.test_mode_dm_user_name],
-                include_entities=False)
-            dm_user_id = lookup_results[0].id
+        twitter_api = tweepy.Client(consumer_key=command_args.twitter_consumer_key,
+                                    consumer_secret=command_args.twitter_consumer_secret,
+                                    access_token=command_args.twitter_access_token,
+                                    access_token_secret=command_args.twitter_access_secret)
 
         for video_ID, item in data_class.DataFrame.iterrows():
             tweet_text = f'New Brain Blaze Video: {item["title"]} \n https://www.youtube.com/watch?v={video_ID}'
+
             if command_args.test_mode:
-                twitter_api.send_direct_message(recipient_id=dm_user_id,
-                                                text=tweet_text)
+                print(f'tweet_sent: {tweet_text}')
             else:
-                twitter_api.update_status(tweet_text)
+                twitter_api.create_tweet(text=tweet_text)
+                print(f'tweet_sent: {tweet_text}')
+
+    print('End of Job')
