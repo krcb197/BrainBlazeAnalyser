@@ -29,5 +29,5 @@ jobs:
     - name: Generate Report
       run: |
         python BrainBlazeInfoGraphic.py -youtubeapikey ${{ secrets.YOUTUBE_API_KEY }} -twitter_consumer_key ${{ secrets.TWITTER_CONSUMER_KEY}} -twitter_consumer_secret ${{ secrets.TWITTER_CONSUMER_SECRET}} -twitter_access_token ${{ secrets.TWITTER_ACCESS_TOKEN}} -twitter_access_secret ${{ secrets.TWITTER_ACCESS_SECRET}} -test_mode -test_mode_dm_user_name ${{ secrets.TEST_MODE_DM_TARGET}}
-        python DailyBrainBlaze.py -youtubeapikey ${{ secrets.YOUTUBE_API_KEY }} -twitter_consumer_key ${{ secrets.TWITTER_CONSUMER_KEY}} -twitter_consumer_secret ${{ secrets.TWITTER_CONSUMER_SECRET}} -twitter_access_token ${{ secrets.TWITTER_ACCESS_TOKEN}} -twitter_access_secret ${{ secrets.TWITTER_ACCESS_SECRET}} -test_mode -test_mode_dm_user_name ${{ secrets.TEST_MODE_DM_TARGET}}
+        python DailyBrainBlaze.py -youtubeapikey ${{ secrets.YOUTUBE_API_KEY }} -twitter_consumer_key ${{ secrets.TWITTER_CONSUMER_KEY}} -twitter_consumer_secret ${{ secrets.TWITTER_CONSUMER_SECRET}} -twitter_access_token ${{ secrets.TWITTER_ACCESS_TOKEN}} -twitter_access_secret ${{ secrets.TWITTER_ACCESS_SECRET}} -test_mode
 
