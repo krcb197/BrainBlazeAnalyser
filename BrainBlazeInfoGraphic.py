@@ -393,36 +393,17 @@ if __name__ == "__main__":
     auth.set_access_token(key=command_args.twitter_access_token,
                           secret=command_args.twitter_access_secret)
 
-    #auth = tweepy.OAuth2BearerHandler(command_args.twitter_bearer_handler)
-    twitter_api = tweepy.API(auth)
+    twitter_v1_api = tweepy.API(auth)
 
-    media_list = []
-    media_response = twitter_api.media_upload('bb_infographic.png')
-    media_list.append(media_response.media_id_string)
+    dashboard_upload = twitter_v1_api.media_upload('bb_infographic.png')
+    piechart_upload = twitter_v1_api.media_upload('bb_piechart.png')
 
-    if command_args.test_mode:
-        lookup_results = twitter_api.lookup_users(screen_name=[command_args.test_mode_dm_user_name],
-                                                  include_entities=False)
-        dm_user_id = lookup_results[0].id
+    twitter_api = tweepy.Client(consumer_key=command_args.twitter_consumer_key,
+                                consumer_secret=command_args.twitter_consumer_secret,
+                                access_token=command_args.twitter_access_token,
+                                access_token_secret=command_args.twitter_access_secret)
 
-    if command_args.test_mode:
-        twitter_api.send_direct_message(recipient_id=dm_user_id,
-                                        attachment_media_id=media_response.media_id,
-                                        attachment_type='media',
-                                        text='strip chart test')
-    else:
-        twitter_api.update_status('Weekly report from the Office of Basement Accountability',
-                                  media_ids=media_list)
-
-
-    media_list = []
-    media_response = twitter_api.media_upload('bb_piechart.png')
-    media_list.append(media_response.media_id_string)
-    if command_args.test_mode:
-        twitter_api.send_direct_message(recipient_id=dm_user_id,
-                                        attachment_media_id=media_response.media_id,
-                                        attachment_type='media',
-                                        text='pie chart test')
-    else:
-        twitter_api.update_status('Weekly @SimonWhistler Output Breakdown',
-                                  media_ids=media_list)
+    twitter_api.create_tweet(text='test Weekly report from the Office of Basement Accountability',
+                              media_ids=[dashboard_upload.media_id_string])
+    twitter_api.create_tweet(text='test Weekly @SimonWhistler Output Breakdown',
+                             media_ids=[piechart_upload.media_id_string])
