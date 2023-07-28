@@ -5,13 +5,13 @@ import time
 import json
 import os
 import argparse
+from random import randint
 
 from dateutil.parser import isoparse
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly.express as px
 import numpy as np
-import pandas as pd
 import tweepy
 
 from BrainBlazeAnalyser import ISO8601_duration_to_time_delta
@@ -403,7 +403,22 @@ if __name__ == "__main__":
                                 access_token=command_args.twitter_access_token,
                                 access_token_secret=command_args.twitter_access_secret)
 
-    twitter_api.create_tweet(text='test Weekly report from the Office of Basement Accountability',
-                              media_ids=[dashboard_upload.media_id_string])
-    twitter_api.create_tweet(text='test Weekly @SimonWhistler Output Breakdown',
+    if command_args.test_mode:
+        tweet_string = f'Test dashboard: {randint(0, (2**32)-1):d}'
+    else:
+        tweet_string = 'Weekly report from the Office of Basement Accountability'
+    dashboard_tweet = twitter_api.create_tweet(text=tweet_string,
+                                               media_ids=[dashboard_upload.media_id_string])
+    if command_args.test_mode:
+        tweet_string = f'Test piechart: {randint(0, (2**32)-1):d}'
+    else:
+        tweet_string = 'Weekly @SimonWhistler Output Breakdown'
+    pie_tweet = twitter_api.create_tweet(text=tweet_string,
                              media_ids=[piechart_upload.media_id_string])
+
+    if command_args.test_mode:
+        print('Deleting the test tweets')
+        twitter_api.delete_tweet(id=pie_tweet[0]['id'])
+        twitter_api.delete_tweet(id=dashboard_tweet[0]['id'])
+
+
