@@ -5,13 +5,13 @@ import time
 import json
 import os
 import argparse
+from random import randint
 
 from dateutil.parser import isoparse
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly.express as px
 import numpy as np
-import pandas as pd
 import tweepy
 
 from BrainBlazeAnalyser import ISO8601_duration_to_time_delta
@@ -393,36 +393,32 @@ if __name__ == "__main__":
     auth.set_access_token(key=command_args.twitter_access_token,
                           secret=command_args.twitter_access_secret)
 
-    #auth = tweepy.OAuth2BearerHandler(command_args.twitter_bearer_handler)
-    twitter_api = tweepy.API(auth)
+    twitter_v1_api = tweepy.API(auth)
 
-    media_list = []
-    media_response = twitter_api.media_upload('bb_infographic.png')
-    media_list.append(media_response.media_id_string)
+    dashboard_upload = twitter_v1_api.media_upload('bb_infographic.png')
+    piechart_upload = twitter_v1_api.media_upload('bb_piechart.png')
 
-    if command_args.test_mode:
-        lookup_results = twitter_api.lookup_users(screen_name=[command_args.test_mode_dm_user_name],
-                                                  include_entities=False)
-        dm_user_id = lookup_results[0].id
+    twitter_api = tweepy.Client(consumer_key=command_args.twitter_consumer_key,
+                                consumer_secret=command_args.twitter_consumer_secret,
+                                access_token=command_args.twitter_access_token,
+                                access_token_secret=command_args.twitter_access_secret)
 
     if command_args.test_mode:
-        twitter_api.send_direct_message(recipient_id=dm_user_id,
-                                        attachment_media_id=media_response.media_id,
-                                        attachment_type='media',
-                                        text='strip chart test')
+        tweet_string = f'Test dashboard: {randint(0, (2**32)-1):d}'
     else:
-        twitter_api.update_status('Weekly report from the Office of Basement Accountability',
-                                  media_ids=media_list)
-
-
-    media_list = []
-    media_response = twitter_api.media_upload('bb_piechart.png')
-    media_list.append(media_response.media_id_string)
+        tweet_string = 'Weekly report from the Office of Basement Accountability'
+    dashboard_tweet = twitter_api.create_tweet(text=tweet_string,
+                                               media_ids=[dashboard_upload.media_id_string])
     if command_args.test_mode:
-        twitter_api.send_direct_message(recipient_id=dm_user_id,
-                                        attachment_media_id=media_response.media_id,
-                                        attachment_type='media',
-                                        text='pie chart test')
+        tweet_string = f'Test piechart: {randint(0, (2**32)-1):d}'
     else:
-        twitter_api.update_status('Weekly @SimonWhistler Output Breakdown',
-                                  media_ids=media_list)
+        tweet_string = 'Weekly @SimonWhistler Output Breakdown'
+    pie_tweet = twitter_api.create_tweet(text=tweet_string,
+                             media_ids=[piechart_upload.media_id_string])
+
+    if command_args.test_mode:
+        print('Deleting the test tweets')
+        twitter_api.delete_tweet(id=pie_tweet[0]['id'])
+        twitter_api.delete_tweet(id=dashboard_tweet[0]['id'])
+
+
