@@ -3,15 +3,16 @@ import time
 import json
 import os
 import argparse
+import re
+from datetime import timedelta, datetime, timezone
+from typing import Optional
 
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-import re
-from datetime import timedelta, datetime, timezone
+
 from dateutil.parser import isoparse
-from typing import Optional, Union, List
 
 from google_access_lib import YouTubeWrapper
 
@@ -31,12 +32,12 @@ def ISO8601_duration_to_time_delta(value: str) -> Optional[timedelta]:
             print(f'failed to process: {value}')
             return None
         else:
-            min = 0
+            minutes = 0
             sec = 0
             hour = 0
             for entry in analysis:
                 if entry[-1] == 'M':
-                    min = int(entry[:-1])
+                    minutes = int(entry[:-1])
                 elif entry[-1] == 'S':
                     sec = int(entry[:-1])
                 elif entry[-1] == 'H':
@@ -44,7 +45,7 @@ def ISO8601_duration_to_time_delta(value: str) -> Optional[timedelta]:
                 else:
                     print('unhanded subsection {entry} in {value}')
 
-            return timedelta(minutes=min, seconds=sec, hours=hour)
+            return timedelta(minutes=minutes, seconds=sec, hours=hour)
     else:
         print(f'string should start PT, {value}')
         return None
@@ -312,7 +313,8 @@ if __name__ == "__main__":
              linewidth=5,
              color='grey',
              label='10 Video rolling average')
-    plt.plot(non_epic['Published Time'], non_epic['Duration (s)'] / 60, 'x', markerfacecolor='blue', markersize=7)
+    plt.plot(non_epic['Published Time'], non_epic['Duration (s)'] / 60, 'x',
+             markerfacecolor='blue', markersize=7)
     plt.plot(epic['Published Time'], epic['Duration (s)'] / 60, marker='*', markersize=20,
              markerfacecolor='yellow', markeredgecolor='red', linestyle='None', label='Epic Blaze')
     plt.ylabel('Duration (Min)')
@@ -328,7 +330,8 @@ if __name__ == "__main__":
     ax.set_xlim(x_lim)
 
     axins = ax.inset_axes([0.7, 0.67, 0.15, 0.2])
-    axins.plot(non_epic['Published Time'], non_epic['Duration (s)'] / 60, 'x', markerfacecolor='blue', markersize=20)
+    axins.plot(non_epic['Published Time'], non_epic['Duration (s)'] / 60, 'x',
+               markerfacecolor='blue', markersize=20)
     axins.hlines(y=80, xmin=x_lim[0], xmax=x_lim[1])
     axins.set_xlim(19305, 19310)
     axins.set_ylim(79.3, 80.2)
@@ -336,10 +339,15 @@ if __name__ == "__main__":
     axins.set_yticklabels([])
     near_epic_video = non_epic.loc['fGSiTjbN1Gk']
     epic_short_fall =(80*60)-near_epic_video['Duration (s)']
-    axins.arrow(x=near_epic_video['Published Time'], y=near_epic_video['Duration (s)'] / 60, dx=0, dy=80 - (near_epic_video['Duration (s)'] / 60), shape='full', width=0.05, length_includes_head=True, head_length=0.1)
+    axins.arrow(x=near_epic_video['Published Time'],
+                y=near_epic_video['Duration (s)'] / 60,
+                dx=0,
+                dy=80 - (near_epic_video['Duration (s)'] / 60),
+                shape='full', width=0.05, length_includes_head=True, head_length=0.1)
     axins.text(x=near_epic_video['Published Time'],
                y=np.mean([(near_epic_video['Duration (s)'] / 60), 80]),
-               s=f'{epic_short_fall}s short of epic', ha='center', va='center', bbox=dict(facecolor='white', boxstyle='round'))
+               s=f'{epic_short_fall}s short of epic', ha='center', va='center',
+               bbox=dict(facecolor='white', boxstyle='round'))
     ax.indicate_inset_zoom(axins, edgecolor="black")
 
     writer_fig = plt.figure()
