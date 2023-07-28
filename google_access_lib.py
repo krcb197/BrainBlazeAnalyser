@@ -4,14 +4,15 @@ it started out as an extension to the YoutubeEasyWrapper, however, increasingly 
 class was being overridden so the link was broken
 """
 import os
+from datetime import datetime, timezone
+from time import sleep
 
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
-from datetime import datetime, timezone
-from time import sleep
+
 
 class _GoogleAPIBase:
 
@@ -80,7 +81,7 @@ class YouTubeWrapper(_GoogleAPIBase):
 
         output = []
         for item in items:
-            result = dict()
+            result = {}
             result['video_id'] = item['id']['videoId']
             output.append(result)
 
@@ -108,7 +109,7 @@ class YouTubeWrapper(_GoogleAPIBase):
 
         output = []
         for item in items:
-            result = dict()
+            result = {}
             result['title'] = item['snippet']['title']
             result['id'] = item['id']
             output.append(result)
@@ -177,7 +178,7 @@ class YouTubeWrapper(_GoogleAPIBase):
 
         output = []
         for item in items:
-            result = dict()
+            result = {}
             result['video_id'] = item['snippet']['resourceId']['videoId']
             output.append(result)
 

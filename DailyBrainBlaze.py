@@ -4,16 +4,15 @@ import datetime
 import time
 import json
 import os
-from dateutil.parser import isoparse
 import argparse
+
+from dateutil.parser import isoparse
 import tweepy
 import pandas as pd
 
 from google_access_lib import YouTubeWrapper
 
 from BrainBlazeAnalyser import ISO8601_duration_to_time_delta
-
-
 
 today = datetime.date.today()
 one_day_old = datetime.datetime.combine(time=datetime.time(),
@@ -76,8 +75,8 @@ class DailyBrainBlaze:
             # The cache file does not exist and must be generated from scratch
             videos = get_videos(earliest_date)
 
-            with open(cache_file, 'w') as fp:
-                json.dump(videos, fp)
+            with open(cache_file, 'w', encoding='utf-8') as fid:
+                json.dump(videos, fid)
 
         else:
             last_update_time = os.path.getmtime(cache_file)
@@ -89,14 +88,14 @@ class DailyBrainBlaze:
                 # The cache file does not exist and must be generated from scratch
                 videos = get_videos(earliest_date)
 
-                with open(cache_file, 'w') as fp:
-                    json.dump(videos, fp)
+                with open(cache_file, 'w', encoding='utf-8') as fid:
+                    json.dump(videos, fid)
             else:
                 print(f'{cache_file=} is less than 24 hours old no update performed')
 
                 # cache file exists and must be updated
-                with open(cache_file) as fp:
-                    videos = json.load(fp)
+                with open(cache_file, encoding='utf-8') as fid:
+                    videos = json.load(fid)
 
         return videos
 
@@ -157,8 +156,8 @@ class DailyBrainBlaze:
 
             videos_details = self._get_videos_meta_data(video_id_list)
 
-            with open(cache_file, 'w') as fp:
-                json.dump(videos_details, fp)
+            with open(cache_file, 'w', encoding='utf-8') as fid:
+                json.dump(videos_details, fid)
         else:
 
 
@@ -169,13 +168,13 @@ class DailyBrainBlaze:
                 # if the file was last updated more than 24 hours ago do an update
                 videos_details = self._get_videos_meta_data(video_id_list)
 
-                with open(cache_file, 'w') as fp:
+                with open(cache_file, 'w', encoding='utf-8') as fp:
                     json.dump(videos_details, fp)
             else:
                 print(f'{cache_file=} is less than 24 hours old no update performed')
 
-                with open(cache_file) as fp:
-                    videos_details = json.load(fp)
+                with open(cache_file, encoding='utf-8') as fid:
+                    videos_details = json.load(fid)
 
         return videos_details
 
