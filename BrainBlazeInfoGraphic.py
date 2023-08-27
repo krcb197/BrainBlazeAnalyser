@@ -42,18 +42,15 @@ class BrainBlazeInfoGraphic:
     class for retrieving data about Simon Whistler YouTube Channels
     """
 
-    # YouTube Channel ID other Simon Whistler YouTube channels, thise are used to make sure
+    # YouTube Channel ID other Simon Whistler YouTube channels, these are used to make sure
     # Simon is not overly focusing on the "wrong" channels
     whistler_channels = ['UCYY5GWf7MHFJ6DZeHreoXgw',  # BrainBlaze
-                         'UClnDI2sdehVm1zm_LmUHsjQ',  # Biographics
-                         'UCHKRfxkMTqiiv4pF99qGKIw',  # Geographics
                          'UCnb-VTwBHEV3gtiB9di9DZQ',  # History Highlights
                          'UC0woBco6Dgcxt0h8SwyyOmw',  # Megaprojects
                          'UC3Wn3dABlgESm8Bzn8Vamgg',  # Side Projects
                          'UCVH8lH7ZLDUe_d9mZ3dlyYQ',  # xplrd
                          'UCf-U0uPVQZtcqXUWa_Hl4Mw',  # Into the shadows
                          'UCp1tsmksyf6TgKFMdt8-05Q',  # Casual Crimalist
-                         'UCQ-hpFPF4nOKoKPEAZM_THw',  # Top Tenz
                          'UC64UiPJwM_e9AqAd7RiD7JA',  # Today I found Out
                          'UCZdWrz8pF6B5Y_c6Zi6pmdQ',  # decoding the unknown
                          'UC9h8BDcXwkhZtnqoQJ7PggA',  # Warographics
