@@ -45,7 +45,6 @@ class BrainBlazeInfoGraphic:
     # YouTube Channel ID other Simon Whistler YouTube channels, these are used to make sure
     # Simon is not overly focusing on the "wrong" channels
     whistler_channels = ['UCYY5GWf7MHFJ6DZeHreoXgw',  # BrainBlaze
-                         'UCnb-VTwBHEV3gtiB9di9DZQ',  # History Highlights
                          'UC0woBco6Dgcxt0h8SwyyOmw',  # Megaprojects
                          'UC3Wn3dABlgESm8Bzn8Vamgg',  # Side Projects
                          'UCVH8lH7ZLDUe_d9mZ3dlyYQ',  # xplrd
