@@ -54,7 +54,8 @@ class BrainBlazeInfoGraphic:
                          'UCZdWrz8pF6B5Y_c6Zi6pmdQ',  # decoding the unknown
                          'UC9h8BDcXwkhZtnqoQJ7PggA',  # Warographics
                          'UC2NW669ad9CX7KxmykdHbqA',  # The Simon Whistler Show
-                         'UC6udLPIYhLsi_w7MD0iD0tw']  # Science of Science Fiction
+                         'UC6udLPIYhLsi_w7MD0iD0tw',  # Science of Science Fiction
+                         'UCMjQHrxCqxxYRGIkjQeKhIw']  # Astrographics
 
     _video_cache_fn = 'BrainBlazeInfoGraphic_video_cache.json'
     _video_detail_cache_fn = 'BrainBlazeInfoGraphic_video_detail_cache.json'
