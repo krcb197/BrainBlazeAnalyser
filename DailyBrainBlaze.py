@@ -9,7 +9,6 @@ import argparse
 
 from google_access_lib import YouTubeWrapper
 
-from BrainBlazeAnalyser import ISO8601_duration_to_time_delta
 
 import tweepy
 
@@ -127,14 +126,7 @@ class DailyBrainBlaze:
                  'liveStreamingDetails'], None)
 
             output_record['video_id'] = item['id']
-            output_record['duration'] = item['contentDetails']['duration']
-            output_record['channel_id'] = item['snippet']['channelId']
             output_record['title'] = item['snippet']['title']
-            output_record['Channel'] = item['snippet']['channelTitle']
-            output_record['publishedAt'] = item['snippet']['publishedAt']
-
-            if 'liveStreamingDetails' in item.keys():
-                output_record['liveStreamingDetails'] = item['liveStreamingDetails']
 
             output.append(output_record)
 
@@ -187,10 +179,6 @@ class DailyBrainBlaze:
             return None
         b = pd.DataFrame(self.videos_detail)
         b.set_index('video_id', inplace=True)
-        b['Published Time'] = b['publishedAt'].apply(isoparse)
-        b.drop('publishedAt', axis=1, inplace=True)
-        b['Duration (s)'] = b['duration'].apply(ISO8601_duration_to_time_delta).dt.total_seconds()
-        b.drop('duration', axis=1, inplace=True)
 
         return b.drop_duplicates(keep='last')
 
