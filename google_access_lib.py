@@ -4,15 +4,17 @@ it started out as an extension to the YoutubeEasyWrapper, however, increasingly 
 class was being overridden so the link was broken
 """
 import os
-
-from googleapiclient.discovery import build
-
-os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
-
 from datetime import datetime, timezone
 from time import sleep
 
-class GoogleAPIBase:
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
+
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+
+
+
+class _GoogleAPIBase:
 
     def __init__(self, service_name, api_version):
         self.service = None
@@ -22,7 +24,26 @@ class GoogleAPIBase:
     def initialize(self, api_key):
         self.service = build(self.__service_name, self.__api_version, developerKey=api_key)
 
-class YouTubeWrapper(GoogleAPIBase):
+
+class DriveWrapper(_GoogleAPIBase):
+
+    def __init__(self):
+        super().__init__(service_name='drive', api_version='v3')
+
+    def upload_basic(self, filename:str):
+
+        file_metadata = {'name': filename}
+        media = MediaFileUpload(filename,
+                                mimetype='image/jpeg')
+
+        # pylint: disable=maybe-no-member
+        file = self.service.files().create(body=file_metadata, media_body=media,
+                                           fields='id').execute()
+        print(F'File ID: {file.get("id")}')
+
+        return file.get('id')
+
+class YouTubeWrapper(_GoogleAPIBase):
 
     def __init__(self):
         super().__init__(service_name='youtube', api_version='v3')
@@ -60,7 +81,7 @@ class YouTubeWrapper(GoogleAPIBase):
 
         output = []
         for item in items:
-            result = dict()
+            result = {}
             result['video_id'] = item['id']['videoId']
             output.append(result)
 
@@ -88,7 +109,7 @@ class YouTubeWrapper(GoogleAPIBase):
 
         output = []
         for item in items:
-            result = dict()
+            result = {}
             result['title'] = item['snippet']['title']
             result['id'] = item['id']
             output.append(result)
@@ -96,8 +117,9 @@ class YouTubeWrapper(GoogleAPIBase):
         return output
 
     def get_metadata(self, video_id):
+        parts="id, snippet, contentDetails, statistics, liveStreamingDetails"
         list_videos_by_id = self.service.videos().list(id=video_id,
-                                                       part="id, snippet, contentDetails, statistics, liveStreamingDetails").execute()
+                                                       part=parts).execute()
         results = list_videos_by_id.get("items", [])
         if len(results) > 1:
             output = []
@@ -156,7 +178,7 @@ class YouTubeWrapper(GoogleAPIBase):
 
         output = []
         for item in items:
-            result = dict()
+            result = {}
             result['video_id'] = item['snippet']['resourceId']['videoId']
             output.append(result)
 

@@ -1,5 +1,8 @@
+"""
+Generate the Brain Blaze Analyser Weekly report
+"""
 
-from typing import List
+
 import datetime
 import time
 import json
@@ -13,6 +16,7 @@ from plotly.subplots import make_subplots
 import plotly.express as px
 import numpy as np
 import tweepy
+import pandas as pd
 
 from BrainBlazeAnalyser import ISO8601_duration_to_time_delta
 from google_access_lib import YouTubeWrapper
@@ -35,7 +39,7 @@ midight_12_week_ago_monday = datetime.datetime.combine(time=datetime.time(),
                                                                                 weeks=12),
                                                 tzinfo=datetime.timezone.utc)
 
-import pandas as pd
+
 
 class BrainBlazeInfoGraphic:
     """
@@ -82,8 +86,8 @@ class BrainBlazeInfoGraphic:
         if os.path.isfile(self._channel_cache_fn) is False:
             channel_data = self.easy_wrapper.channel(channelID=','.join(self.whistler_channels))
 
-            with open(self._channel_cache_fn, 'w') as fp:
-                json.dump(channel_data, fp)
+            with open(self._channel_cache_fn, 'w', encoding='utf-8') as fid:
+                json.dump(channel_data, fid)
 
         else:
             last_update_time = os.path.getmtime(self._channel_cache_fn)
@@ -95,18 +99,18 @@ class BrainBlazeInfoGraphic:
                 # The cache file does not exist and must be generated from scratch
                 channel_data = self.easy_wrapper.channel(channelID=','.join(self.whistler_channels))
 
-                with open(self._channel_cache_fn, 'w') as fp:
-                    json.dump(channel_data, fp)
+                with open(self._channel_cache_fn, 'w', encoding='utf-8') as fid:
+                    json.dump(channel_data, fid)
             else:
                 print(f'{self._channel_cache_fn=} is less than 24 hours old no update performed')
 
                 # cache file exists and must be updated
-                with open(self._channel_cache_fn) as fp:
-                    channel_data = json.load(fp)
+                with open(self._channel_cache_fn) as fid:
+                    channel_data = json.load(fid)
 
         return channel_data
 
-    def _channel_videos(self, cache_file: str, earliest_date: datetime, channel_id_list: List[str]):
+    def _channel_videos(self, cache_file: str, earliest_date: datetime, channel_id_list: list[str]):
         """
         Search for Video published on a channel (or list of channels), this has two modes of
         operation, depending on whether the cache exists or not:
@@ -138,8 +142,8 @@ class BrainBlazeInfoGraphic:
             # The cache file does not exist and must be generated from scratch
             videos = get_videos(earliest_date)
 
-            with open(cache_file, 'w') as fp:
-                json.dump(videos, fp)
+            with open(cache_file, 'w', encoding='utf-8') as fid:
+                json.dump(videos, fid)
 
         else:
             last_update_time = os.path.getmtime(cache_file)
@@ -151,14 +155,14 @@ class BrainBlazeInfoGraphic:
                 # The cache file does not exist and must be generated from scratch
                 videos = get_videos(earliest_date)
 
-                with open(cache_file, 'w') as fp:
-                    json.dump(videos, fp)
+                with open(cache_file, 'w', encoding='utf-8') as fid:
+                    json.dump(videos, fid)
             else:
                 print(f'{cache_file=} is less than 24 hours old no update performed')
 
                 # cache file exists and must be updated
-                with open(cache_file) as fp:
-                    videos = json.load(fp)
+                with open(cache_file, encoding='utf-8') as fid:
+                    videos = json.load(fid)
 
         return videos
 
@@ -210,8 +214,8 @@ class BrainBlazeInfoGraphic:
 
             videos_details = self._get_videos_meta_data(video_id_list)
 
-            with open(cache_file, 'w') as fp:
-                json.dump(videos_details, fp)
+            with open(cache_file, 'w', encoding='utf-8') as fid:
+                json.dump(videos_details, fid)
         else:
 
 
@@ -222,34 +226,34 @@ class BrainBlazeInfoGraphic:
                 # if the file was last updated more than 24 hours ago do an update
                 videos_details = self._get_videos_meta_data(video_id_list)
 
-                with open(cache_file, 'w') as fp:
-                    json.dump(videos_details, fp)
+                with open(cache_file, 'w', encoding='utf-8') as fid:
+                    json.dump(videos_details, fid)
             else:
                 print(f'{cache_file=} is less than 24 hours old no update performed')
 
-                with open(cache_file) as fp:
-                    videos_details = json.load(fp)
+                with open(cache_file, encoding='utf-8') as fid:
+                    videos_details = json.load(fid)
 
         return videos_details
 
     @property
     def _df_videos_details(self):
 
-        b = pd.DataFrame(self.videos_detail)
-        b.set_index('video_id', inplace=True)
-        b['Published Time'] = b['publishedAt'].apply(isoparse)
-        b.drop('publishedAt', axis=1, inplace=True)
-        b['Duration (s)'] = b['duration'].apply(ISO8601_duration_to_time_delta).dt.total_seconds()
-        b.drop('duration', axis=1, inplace=True)
+        prelim_df = pd.DataFrame(self.videos_detail)
+        prelim_df.set_index('video_id', inplace=True)
+        prelim_df['Published Time'] = prelim_df['publishedAt'].apply(isoparse)
+        prelim_df.drop('publishedAt', axis=1, inplace=True)
+        prelim_df['Duration (s)'] = prelim_df['duration'].apply(ISO8601_duration_to_time_delta).dt.total_seconds()
+        prelim_df.drop('duration', axis=1, inplace=True)
 
-        return b.drop_duplicates(keep='last')
+        return prelim_df.drop_duplicates(keep='last')
 
     @property
-    def DataFrame(self):
+    def data_frame(self):
 
         return self._df_videos_details
 
-parse = argparse.ArgumentParser(description='Weekly Office of Basement accountabilit generator')
+parse = argparse.ArgumentParser(description='Weekly Office of Basement accountability generator')
 parse.add_argument('-youtubeapikey', type=str, required=True)
 parse.add_argument('-twitter_consumer_key', type=str, required=True)
 parse.add_argument('-twitter_consumer_secret', type=str, required=True)
@@ -272,11 +276,10 @@ if __name__ == "__main__":
     channel_list.insert(0, 'Brain Blaze')
 
     # inforgraphic
-    three_month_videos = data_class.DataFrame
+    three_month_videos = data_class.data_frame
 
     # remove a 12 hour The Casual Criminalist which is a re-release of previous videos
     three_month_videos.drop(index=['3aXPgSBoeFY'], inplace=True, errors='ignore')
-    
     # remove a 12 hour deciding the unknown video which is a re-release of previous videos
     three_month_videos.drop(index=['Ncqt4XSQK4Y'], inplace=True, errors='ignore')
 
@@ -326,49 +329,60 @@ if __name__ == "__main__":
                         row=1, col=1)
 
     fig.add_trace(go.Indicator(mode="gauge+number+delta",
-                                value=grouped_duration.unstack('Channel').loc[midnight_monday].sum(),
-                                delta={'reference': grouped_duration.unstack('Channel').loc[minight_last_monday].sum()},
-                                gauge={'axis': {'range': [0, grouped_duration.groupby('Published Time').sum().max() * 1.2]},
-                                      'threshold': {'value': grouped_duration.groupby('Published Time').sum().mean() }},
-                                title={'text': "Total Simon Whistler Output (minutes)"}),
+                               value=grouped_duration.unstack('Channel').loc[
+                                   midnight_monday].sum(),
+                               delta={'reference': grouped_duration.unstack('Channel').loc[
+                                   minight_last_monday].sum()},
+                               gauge={'axis': {'range': [0, grouped_duration.groupby(
+                                   'Published Time').sum().max() * 1.2]},
+                                      'threshold': {'value': grouped_duration.groupby(
+                                          'Published Time').sum().mean()}},
+                               title={'text': "Total Simon Whistler Output (minutes)"}),
                   row=2, col=1)
 
     fig.add_trace(go.Indicator(
         mode="gauge+number+delta",
-        value=grouped_percentage_duration.unstack('Channel').fillna(0)['Brain Blaze'].loc[midnight_monday],
-        delta={'reference': grouped_percentage_duration.unstack('Channel').fillna(0)['Brain Blaze'].loc[minight_last_monday]},
+        value=grouped_percentage_duration.unstack('Channel').fillna(0)['Brain Blaze'].loc[
+            midnight_monday],
+        delta={'reference':
+                   grouped_percentage_duration.unstack('Channel').fillna(0)['Brain Blaze'].loc[
+                       minight_last_monday]},
         number={'suffix': '%'},
         gauge={'axis': {'range': [0, 100]},
-               'threshold': {'value': grouped_percentage_duration.groupby('Channel').mean()['Brain Blaze']}},
+               'threshold': {
+                   'value': grouped_percentage_duration.groupby('Channel').mean()['Brain Blaze']}},
         title={'text': "Brain Blaze<br>Percent of total content"}),
-                  row=2, col=2)
+        row=2, col=2)
 
     fig.add_trace(go.Indicator(
         mode="gauge+number+delta",
         value=grouped_count.unstack('Channel').fillna(0)['Brain Blaze'].loc[midnight_monday],
-        delta={'reference': grouped_count.unstack('Channel').fillna(0)['Brain Blaze'].loc[minight_last_monday]},
+        delta={'reference': grouped_count.unstack('Channel').fillna(0)['Brain Blaze'].loc[
+            minight_last_monday]},
 
-        gauge={'axis': {'range': [0, max_brain_blaze_video_per_week+2 ],
-                        'nticks' : int(max_brain_blaze_video_per_week+3) },
+        gauge={'axis': {'range': [0, max_brain_blaze_video_per_week + 2],
+                        'nticks': int(max_brain_blaze_video_per_week + 3)},
                'threshold': {'value': grouped_count.groupby('Channel').mean()['Brain Blaze']}},
         title={'text': "Brain Blaze<br>Number of Videos"}),
-                  row=2, col=3)
+        row=2, col=3)
 
     fig.add_trace(go.Indicator(
         mode="gauge+number+delta",
         value=grouped_duration.unstack('Channel').fillna(0)['Brain Blaze'].loc[midnight_monday],
-        delta={'reference': grouped_duration.unstack('Channel').fillna(0)['Brain Blaze'].loc[minight_last_monday]},
-        gauge={'axis': {'range': [0, grouped_duration.groupby('Channel').max()['Brain Blaze'] * 1.2]},
-               'threshold': {'value': grouped_duration.groupby('Channel').mean()['Brain Blaze']}},
+        delta={'reference': grouped_duration.unstack('Channel').fillna(0)['Brain Blaze'].loc[
+            minight_last_monday]},
+        gauge={
+            'axis': {'range': [0, grouped_duration.groupby('Channel').max()['Brain Blaze'] * 1.2]},
+            'threshold': {'value': grouped_duration.groupby('Channel').mean()['Brain Blaze']}},
         title={'text': "Brain Blaze<br>duration (minutes)"}),
-                  row=2, col=4)
-
+        row=2, col=4)
 
     fig.update_layout(height=1000, width=1600,
-                      title_text=f'Office of Basement Accountability, Weekly report for period ending {midnight_monday:%d %b %Y}',
+                      title_text='Office of Basement Accountability, '
+                                 f'Weekly report for period ending {midnight_monday:%d %b %Y}',
                       title_x=0.5)
     fig.update_xaxes(title_text="Date of Week Start (always a Monday)", row=1, col=1)
-    fig.update_xaxes(dtick=7*24*60*60*1000, tick0=midight_12_week_ago_monday )
+    fig.update_xaxes(dtick=7 * 24 * 60 * 60 * 1000, tick0=midight_12_week_ago_monday)
     fig.update_yaxes(title_text="Content Duration (minutes)", row=1, col=1)
 
     fig.write_image('bb_infographic.png', engine='kaleido')
@@ -378,10 +392,13 @@ if __name__ == "__main__":
     pie_channels = list(data_for_this_week.index.values)
     pull[pie_channels.index('Brain Blaze')] = 0.2
 
-    fig2 = go.Figure(data=[go.Pie(labels=pie_channels, values=list(data_for_this_week.values), textinfo='label+percent',
+    fig2 = go.Figure(data=[go.Pie(labels=pie_channels, values=list(data_for_this_week.values),
+                                  textinfo='label+percent',
                            insidetextorientation='radial', pull=pull, showlegend=False)])
     fig2.update_layout(height=1000, width=1000,
-                      title_text=f'Office of Basement Accountability, weekly breakdown ending {midnight_monday:%d %b %Y} by Video Duration',
+                      title_text='Office of Basement Accountability, '
+                                 f'weekly breakdown ending {midnight_monday:%d %b %Y} '
+                                 'by Video Duration',
                       title_x=0.5)
     fig2.write_image('bb_piechart.png', engine='kaleido')
 
@@ -403,12 +420,14 @@ if __name__ == "__main__":
     if command_args.test_mode:
         tweet_string = f'Test dashboard: {randint(0, (2**32)-1):d}'
     else:
+        # pylint: disable-next=invalid-name
         tweet_string = 'Weekly report from the Office of Basement Accountability'
     dashboard_tweet = twitter_api.create_tweet(text=tweet_string,
                                                media_ids=[dashboard_upload.media_id_string])
     if command_args.test_mode:
         tweet_string = f'Test piechart: {randint(0, (2**32)-1):d}'
     else:
+        # pylint: disable-next=invalid-name
         tweet_string = 'Weekly @SimonWhistler Output Breakdown'
     pie_tweet = twitter_api.create_tweet(text=tweet_string,
                              media_ids=[piechart_upload.media_id_string])
@@ -417,5 +436,3 @@ if __name__ == "__main__":
         print('Deleting the test tweets')
         twitter_api.delete_tweet(id=pie_tweet[0]['id'])
         twitter_api.delete_tweet(id=dashboard_tweet[0]['id'])
-
-
