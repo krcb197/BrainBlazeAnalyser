@@ -61,10 +61,12 @@ class BrainBlazeInfoGraphic:
     _video_detail_cache_fn = 'BrainBlazeInfoGraphic_video_detail_cache.json'
     _channel_cache_fn = 'BrainBlazeInfoGraphic_channel_cache.json'
 
-    def __init__(self, api_key):
+    def __init__(self, api_key, earliest_date=midight_13_week_ago_monday):
 
         self.easy_wrapper = YouTubeWrapper()
         self.easy_wrapper.initialize(api_key=api_key)
+
+
 
         # the data set is split into brain blaze videos and other simon whistler videos, this
         # allow the usage of the YouTube API to be managed, for example the analyser by default
@@ -72,7 +74,7 @@ class BrainBlazeInfoGraphic:
         # last three months
         self.videos = self._channel_videos(cache_file=self._video_cache_fn,
                                            channel_id_list=self.whistler_channels,
-                                           earliest_date=midight_13_week_ago_monday)
+                                           earliest_date=earliest_date)
         self.videos_detail = self._video_details(cache_file=self._video_detail_cache_fn,
                                                  videos=self.videos)
 
@@ -274,12 +276,11 @@ if __name__ == "__main__":
     # inforgraphic
     three_month_videos = data_class.DataFrame
 
-    # remove a 12 hour The Casual Criminalist which is a re-release of previous videos
-    three_month_videos.drop(index=['3aXPgSBoeFY'], inplace=True, errors='ignore')
     
-    # remove a 12 hour deciding the unknown video which is a re-release of previous videos
-    three_month_videos.drop(index=['Ncqt4XSQK4Y'], inplace=True, errors='ignore')
-
+    # Simon occasionally posts a large archive video with multiple episodes, normally
+    # Casual Criminalist
+    three_month_videos.drop(index=three_month_videos[three_month_videos['Duration (s)'] > 3*60*60].index,
+                            inplace=True, errors='ignore')
 
     grouped_count = \
         three_month_videos.groupby(
